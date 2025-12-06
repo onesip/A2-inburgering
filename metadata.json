@@ -1,0 +1,7 @@
+{
+  "name": "Inburgering A2 Coach",
+  "description": "A comprehensive Dutch speaking exam preparation tool with AI tutoring, pronunciation breakdown, and real-time grading.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
