@@ -3,9 +3,7 @@ import { AIAnalysis, AIGrade } from "./types";
 
 // Helper to get client
 const getAiClient = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key not found");
-  return new GoogleGenAI({ apiKey });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
 // 1. TEACHING MODE: Analyze the ideal answer
