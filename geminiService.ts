@@ -3,7 +3,16 @@ import { AIAnalysis, AIGrade } from "./types";
 
 // Helper to get client
 const getAiClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // CRITICAL FIX: Use import.meta.env.VITE_API_KEY for Vercel/Vite deployments.
+  // 'process.env' does not exist in the browser and causes a white screen crash.
+  const apiKey = (import.meta as any).env.VITE_API_KEY;
+  
+  if (!apiKey) {
+    console.error("API Key is missing. Please check your Vercel Environment Variables.");
+    throw new Error("API Key not found");
+  }
+  
+  return new GoogleGenAI({ apiKey });
 };
 
 // 1. TEACHING MODE: Analyze the ideal answer
@@ -16,45 +25,43 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
     Question: "${question}"
     Answer: "${answer}"
 
-    Provide a detailed breakdown for a Chinese student:
-    1. Structure: Explain the sentence structure (Subject-Verb-Rest, Want/Omdat usage) in Chinese.
-    2. Vocabulary: Key words with Chinese meanings.
-    3. Grammar Tip: One specific rule (e.g., inversion, conjugation).
-    4. Real-life Context: Where/When would a student see or use this? (e.g., "At the station", "Making appointments").
-    5. Related Topics: Predict 2-3 other related exam topics or vocabulary themes.
-
-    Return JSON.
+    Provide analysis in structured JSON.
+    - grammar: List key grammar points used.
+    - vocabulary: List key words with their meanings in Chinese.
+    - tips: A helpful tip for remembering this.
+    - structure: The sentence structure used.
+    - realLifeContext: Where this sentence can be used.
+    - relatedTopics: Other topics related to this.
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: 'gemini-2.5-flash',
     contents: prompt,
     config: {
-      thinkingConfig: { thinkingBudget: 1024 }, // Enable thinking for precision, kept modest to save tokens
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          structure: { type: Type.STRING, description: "Sentence structure explanation in Chinese" },
+          grammar: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING }
+          },
           vocabulary: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
                 word: { type: Type.STRING },
-                meaning: { type: Type.STRING, description: "Chinese meaning" }
+                meaning: { type: Type.STRING },
               }
             }
           },
-          grammar: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING, description: "Grammar rules present" } 
-          },
-          tips: { type: Type.STRING, description: "Exam tip in Chinese" },
-          realLifeContext: { type: Type.STRING, description: "Where/when to use this in real life (Chinese)" },
-          relatedTopics: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING, description: "Related exam themes" } 
+          tips: { type: Type.STRING },
+          structure: { type: Type.STRING },
+          realLifeContext: { type: Type.STRING },
+          relatedTopics: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING }
           }
         }
       }
@@ -64,48 +71,49 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
   if (response.text) {
     return JSON.parse(response.text) as AIAnalysis;
   }
-  throw new Error("Failed to analyze answer");
+  throw new Error("No response from AI");
 };
 
-// 2. GRADING MODE: Grade audio
+// 2. EXAM MODE: Grade the user's audio
 export const gradeUserAudio = async (question: string, audioBase64: string): Promise<AIGrade> => {
   const ai = getAiClient();
 
   const prompt = `
-    You are a strict but helpful Dutch exam examiner for the Inburgering A2 Spreken exam.
+    You are a Dutch Inburgering Exam (A2 level) examiner.
     The student is answering the question: "${question}".
+    Evaluate the audio response.
     
-    Listen to the audio.
-    1. Transcribe exactly what they said.
-    2. Rate from 1-10 (A2 level). 6 is passing.
-    3. Correct grammar.
-    4. Provide feedback in Chinese (Mandarin).
+    Return a JSON object with:
+    - score: number (1-10) based on A2 level expectations (understandability is key).
+    - transcription: what you heard.
+    - pronunciation: specific feedback on pronunciation errors.
+    - grammarCorrection: correct the sentence if grammar is wrong.
+    - feedback: general constructive feedback in English.
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: 'gemini-2.5-flash',
     contents: {
       parts: [
-        { text: prompt },
         {
           inlineData: {
-            mimeType: "audio/webm;codecs=opus", 
+            mimeType: 'audio/webm',
             data: audioBase64
           }
-        }
+        },
+        { text: prompt }
       ]
     },
     config: {
-      thinkingConfig: { thinkingBudget: 1024 }, // Enable thinking for fair and precise grading
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
           score: { type: Type.NUMBER },
           transcription: { type: Type.STRING },
-          pronunciation: { type: Type.STRING, description: "Comments on pronunciation" },
-          grammarCorrection: { type: Type.STRING, description: "Corrected Dutch sentence" },
-          feedback: { type: Type.STRING, description: "Feedback in Chinese" }
+          pronunciation: { type: Type.STRING },
+          grammarCorrection: { type: Type.STRING },
+          feedback: { type: Type.STRING },
         }
       }
     }
@@ -114,5 +122,5 @@ export const gradeUserAudio = async (question: string, audioBase64: string): Pro
   if (response.text) {
     return JSON.parse(response.text) as AIGrade;
   }
-  throw new Error("Failed to grade audio");
+  throw new Error("No response from AI");
 };

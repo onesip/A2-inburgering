@@ -130,6 +130,7 @@ const App: React.FC = () => {
   
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [grade, setGrade] = useState<AIGrade | null>(null);
+  const [apiKeyMissing, setApiKeyMissing] = useState(false);
 
   // Study Plan State
   const [startDay, setStartDay] = useState<number | null>(null);
@@ -172,6 +173,16 @@ const App: React.FC = () => {
     setAnalysis(null);
     setGrade(null);
   }, [currentQuestionIndex, activePart]);
+
+  // Check for API Key (Updated for Vite)
+  useEffect(() => {
+    // VITE SPECIFIC: Use import.meta.env.VITE_API_KEY
+    // Safely cast to 'any' to avoid TypeScript errors if types aren't loaded
+    const apiKey = (import.meta as any).env?.VITE_API_KEY;
+    if (!apiKey) {
+      setApiKeyMissing(true);
+    }
+  }, []);
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -276,6 +287,27 @@ const App: React.FC = () => {
       setIsGrading(false);
     }
   };
+
+  if (apiKeyMissing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h1 className="text-xl font-bold mb-2">API Key Missing</h1>
+          <p className="text-slate-600 mb-4">
+            The application cannot connect to Google Gemini AI.
+          </p>
+          <div className="bg-slate-50 p-3 rounded text-left text-sm text-slate-700 font-mono overflow-x-auto border border-slate-200">
+             Vercel Environment Variable:<br/>
+             <span className="font-bold text-indigo-600">VITE_API_KEY</span>
+          </div>
+          <p className="text-xs text-slate-500 mt-4">
+             Please check your Vercel Project Settings > Environment Variables.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Get current plan data
   const todaysPlan = STUDY_PLAN.find(p => p.day === currentPlanDay) || STUDY_PLAN[0];
