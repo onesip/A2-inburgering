@@ -63,7 +63,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 1: Interview",
     description: "万事开头难。今天专注于掌握关于你自己的基础问题。使用简短、正确的句子。",
     tasks: ["练习 5 道 'Part 1' 题目。", "重点练习句型: 'Ik ben...', 'Ik woon...', 'Ik doe...'."],
-    recommendedParts: [ExamPart.Part1]
+    recommendedParts: [ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part1, count: 5 }
+    ]
   },
   {
     day: 2,
@@ -71,7 +74,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 1: Interview",
     description: "扩展到工作话题。学习职业名称和学习相关的词汇。",
     tasks: ["练习 5 道 'Part 1' 题目。", "学习 3 个荷兰语职业名称。"],
-    recommendedParts: [ExamPart.Part1]
+    recommendedParts: [ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part1, count: 5 }
+    ]
   },
   {
     day: 3,
@@ -79,7 +85,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 1: Interview",
     description: "谈论你的房子和家人。练习数字（年份、年龄）。",
     tasks: ["练习 5 道 'Part 1' 题目。", "用 3 句话描述你的客厅。"],
-    recommendedParts: [ExamPart.Part1]
+    recommendedParts: [ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part1, count: 5 }
+    ]
   },
   {
     day: 4,
@@ -87,7 +96,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 1: Review",
     description: "第一次小复习。随机抽取 Part 1 题目以提高反应速度。",
     tasks: ["使用 '随机练习' 功能练习 Part 1 (10 次)。", "目标：犹豫时间小于 5 秒。"],
-    recommendedParts: [ExamPart.Part1]
+    recommendedParts: [ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_random', count: 10 }
+    ]
   },
   {
     day: 5,
@@ -95,7 +107,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 2: Description",
     description: "Part 2 入门。使用简单的主语-动词-其余成分 (S-V-R) 结构。不要过度解读，只描述看到的。",
     tasks: ["练习 4 道 'Part 2' 题目。", "复习 2 道 'Part 1' 题目 (螺旋式复习)。"],
-    recommendedParts: [ExamPart.Part2, ExamPart.Part1]
+    recommendedParts: [ExamPart.Part2, ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part2, count: 4 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part1, count: 2 }
+    ]
   },
   {
     day: 6,
@@ -103,7 +119,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 2: Description",
     description: "关注动词：Lopen (走), praten (说), koken (做饭), kopen (买)。那个人在做什么？",
     tasks: ["练习 5 道 'Part 2' 题目。", "注意动词变位 (stam+t)。"],
-    recommendedParts: [ExamPart.Part2]
+    recommendedParts: [ExamPart.Part2],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part2, count: 5 }
+    ]
   },
   {
     day: 7,
@@ -111,7 +130,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 2: Description",
     description: "添加细节。例如 'De rode auto' (红色的车), 'twee mensen' (两个人)。",
     tasks: ["练习 5 道 'Part 2' 题目。", "复习 3 道 'Part 1' 题目。"],
-    recommendedParts: [ExamPart.Part2, ExamPart.Part1]
+    recommendedParts: [ExamPart.Part2, ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part2, count: 5 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part1, count: 3 }
+    ]
   },
   {
     day: 8,
@@ -119,7 +142,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 2: Complex Situations",
     description: "情景：火灾、车坏了、生病。他们该给谁打电话？",
     tasks: ["练习 5 道 'Part 2' 题目。", "学习词汇: Brandweer (消防), Politie (警察), Dokter (医生), Monteur (技工)。"],
-    recommendedParts: [ExamPart.Part2]
+    recommendedParts: [ExamPart.Part2],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part2, count: 5 }
+    ]
   },
   {
     day: 9,
@@ -127,7 +153,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 2: Speed",
     description: "随机 Part 2 提问。尝试立即作答。",
     tasks: ["做 10 道 Part 2 随机题。", "做 2 道 Part 1 随机题。"],
-    recommendedParts: [ExamPart.Part2, ExamPart.Part1]
+    recommendedParts: [ExamPart.Part2, ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_random', count: 10 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part1, count: 2 }
+    ]
   },
   {
     day: 10,
@@ -135,7 +165,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 3: Preference",
     description: "Part 3 入门。句型：'Ik doe liever...' (我更喜欢做...), 'Ik vind... leuker' (我觉得...更有趣)。",
     tasks: ["练习 4 道 'Part 3' 题目。", "背诵区别: 'Liever' (更喜欢/动词副词) vs 'Leuker' (更有趣/形容词比较级)。"],
-    recommendedParts: [ExamPart.Part3]
+    recommendedParts: [ExamPart.Part3],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part3, count: 4 }
+    ]
   },
   {
     day: 11,
@@ -143,7 +176,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 3: Grammar",
     description: "关键语法！'Want' + 正常语序。 'Omdat' + 动词放句尾。",
     tasks: ["练习 5 道 'Part 3' 题目，只使用 'Want'。", "复习 2 道 'Part 2' 题目。"],
-    recommendedParts: [ExamPart.Part3, ExamPart.Part2]
+    recommendedParts: [ExamPart.Part3, ExamPart.Part2],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part3, count: 5 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part2, count: 2 }
+    ]
   },
   {
     day: 12,
@@ -151,7 +188,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 3: Topics",
     description: "比较工作环境、居住情况和交通方式。",
     tasks: ["练习 5 道 'Part 3' 题目。", "复习 2 道 'Part 1' 题目。"],
-    recommendedParts: [ExamPart.Part3, ExamPart.Part1]
+    recommendedParts: [ExamPart.Part3, ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part3, count: 5 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part1, count: 2 }
+    ]
   },
   {
     day: 13,
@@ -159,7 +200,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 3: Topics",
     description: "比较运动、食物和爱好。给出一个清晰的理由。",
     tasks: ["练习 5 道 'Part 3' 题目。", "复习 2 道 'Part 2' 题目。"],
-    recommendedParts: [ExamPart.Part3, ExamPart.Part2]
+    recommendedParts: [ExamPart.Part3, ExamPart.Part2],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part3, count: 5 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part2, count: 2 }
+    ]
   },
   {
     day: 14,
@@ -167,7 +212,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 3 & Review",
     description: "混合练习。Part 3 需要思考。练习果断地表达。",
     tasks: ["10 道 Part 3 随机题。", "3 道 Part 1 随机题。"],
-    recommendedParts: [ExamPart.Part3, ExamPart.Part1]
+    recommendedParts: [ExamPart.Part3, ExamPart.Part1],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_random', count: 10 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part1, count: 3 }
+    ]
   },
   {
     day: 15,
@@ -175,7 +224,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 4: Story",
     description: "Part 4 入门。魔法三剑客：'Eerst' (首先), 'Daarna' (然后), 'Tot slot' (最后)。",
     tasks: ["练习 3 道 'Part 4' 题目。", "在每个回答中强制使用这三个词。"],
-    recommendedParts: [ExamPart.Part4]
+    recommendedParts: [ExamPart.Part4],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part4, count: 3 }
+    ]
   },
   {
     day: 16,
@@ -183,7 +235,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 4: Grammar",
     description: "故事通常发生在过去。使用完成时 'Hij heeft gekookt'。保持简单。",
     tasks: ["练习 4 道 'Part 4' 题目。", "复习 2 道 'Part 3' 题目。"],
-    recommendedParts: [ExamPart.Part4, ExamPart.Part3]
+    recommendedParts: [ExamPart.Part4, ExamPart.Part3],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part4, count: 4 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part3, count: 2 }
+    ]
   },
   {
     day: 17,
@@ -191,7 +247,11 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Part 4: Story",
     description: "做饭、睡觉、旅行的故事。逻辑性地连接图片。",
     tasks: ["练习 4 道 'Part 4' 题目。", "复习 2 道 'Part 2' 题目。"],
-    recommendedParts: [ExamPart.Part4, ExamPart.Part2]
+    recommendedParts: [ExamPart.Part4, ExamPart.Part2],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part4, count: 4 },
+      { taskIndex: 1, type: 'count_part', targetPart: ExamPart.Part2, count: 2 }
+    ]
   },
   {
     day: 18,
@@ -199,7 +259,12 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "All Parts",
     description: "高强度练习日。覆盖所有 4 个部分。",
     tasks: ["Part 1, 2, 3, 4 各做 2 道题。", "注意切换思维模式。"],
-    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
+    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_part', targetPart: ExamPart.Part1, count: 2 }
+      // The task says "Do 2 of each". Simplified to checking Part 1 for now, user can click others.
+      // Ideally we would split this into 4 tasks for tracking, but keeping UI simple.
+    ]
   },
   {
     day: 19,
@@ -207,7 +272,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Simulation",
     description: "像真正的考试一样对待。不要暂停。录下所有内容。",
     tasks: ["使用 '随机' 按钮进行 20 分钟模拟。", "不要重录。坚持说下去。"],
-    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
+    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_random', count: 15 } // Approx 15 questions in 20 mins
+    ]
   },
   {
     day: 20,
@@ -215,7 +283,10 @@ export const STUDY_PLAN: StudyPlanDay[] = [
     focus: "Relax & Shine",
     description: "你准备好了。今天轻松练习，增强自信。",
     tasks: ["做你最擅长的 5 道题。", "对自己说：'Ik kan dit!' (我能行！)"],
-    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
+    recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4],
+    autoChecks: [
+      { taskIndex: 0, type: 'count_any', count: 5 }
+    ]
   }
 ];
 
@@ -568,7 +639,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
   {
     id: 'p2-q3',
     part: ExamPart.Part2,
-    questionDutch: "Wat ziet u op het plaatje? Doet u dit ook wel eens?",
+    questionDutch: "Wat ziet u? Doet u dit ook wel eens?",
     questionChinese: "您在图片上看到了什么？您也会这样做吗？",
     imageDescription: "一个人坐在候诊室等医生。",
     idealSamples: [

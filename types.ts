@@ -61,6 +61,16 @@ export interface DrillResult {
   betterVersion?: string;
 }
 
+// --- NEW TYPES FOR AUTOMATIC PROGRESS TRACKING ---
+export type AutoCheckType = 'count_part' | 'count_random' | 'count_drill' | 'count_any';
+
+export interface AutoCheck {
+  taskIndex: number; // Which task index in the array this rule completes
+  type: AutoCheckType;
+  targetPart?: ExamPart; // If specific part is needed
+  count: number; // How many times
+}
+
 export interface StudyPlanDay {
   day: number;
   title: string;
@@ -68,6 +78,7 @@ export interface StudyPlanDay {
   description: string;
   tasks: string[];
   recommendedParts: ExamPart[];
+  autoChecks?: AutoCheck[]; // Rules for auto-completion
 }
 
 // --- NEW TYPES FOR KNOWLEDGE BASE ---
@@ -90,12 +101,20 @@ export interface GrammarRule {
 // --- NEW TYPES FOR HISTORY TRACKING ---
 export type StudyFocus = 'exercise' | 'random' | 'drill' | 'library';
 
+export interface StudyEventMetadata {
+  part?: ExamPart;
+  isRandom?: boolean;
+  isDrill?: boolean;
+  score?: number;
+}
+
 export interface StudyEvent {
   id: string;
   timestamp: number;
   timeString: string; // HH:MM
   focus: StudyFocus;
   description: string;
+  metadata?: StudyEventMetadata; // Extra data for auto-tracking
 }
 
 export interface DailyRecord {

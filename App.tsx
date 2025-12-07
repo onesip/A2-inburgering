@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles, Dumbbell, Library, Grid, ArrowRight, History, BarChart3, Activity } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN, DRILL_SCENARIOS, TOPIC_CHEAT_SHEETS, GRAMMAR_CHEAT_SHEETS } from './constants';
-import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay, DrillType, DrillResult, TopicReference, GrammarRule, DailyRecord, StudyFocus, StudyEvent } from './types';
+import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay, DrillType, DrillResult, TopicReference, GrammarRule, DailyRecord, StudyFocus, StudyEvent, StudyEventMetadata } from './types';
 import { analyzeIdealAnswer, gradeUserAudio, gradeDrillAudio } from './geminiService';
 
 // --- UTILS ---
@@ -210,9 +210,10 @@ const StrategyCard = ({ part }: { part: ExamPart }) => {
 interface SentenceGymProps {
   onInteract: () => void;
   onRecordStart: () => void;
+  onComplete: (result: DrillResult) => void;
 }
 
-const SentenceGym: React.FC<SentenceGymProps> = ({ onInteract, onRecordStart }) => {
+const SentenceGym: React.FC<SentenceGymProps> = ({ onInteract, onRecordStart, onComplete }) => {
   const [activeDrill, setActiveDrill] = useState<DrillType>(DrillType.Completion);
   const [prompt, setPrompt] = useState(DRILL_SCENARIOS[DrillType.Completion][0]);
   const [isRecording, setIsRecording] = useState(false);
@@ -277,6 +278,7 @@ const SentenceGym: React.FC<SentenceGymProps> = ({ onInteract, onRecordStart }) 
     try {
       const res = await gradeDrillAudio(activeDrill, prompt.prompt, audioBase64);
       setResult(res);
+      onComplete(res);
     } catch (error) {
       console.error(error);
       alert("AI 老师休息中，请稍后再试。");
@@ -820,7 +822,7 @@ const App: React.FC = () => {
   // --- STUDY TRACKER LOGIC ---
 
   // Helper to log a discreet event
-  const logEvent = useCallback((description: string, focusOverride?: StudyFocus) => {
+  const logEvent = useCallback((description: string, focusOverride?: StudyFocus, metadata?: StudyEventMetadata) => {
     const focus = focusOverride || currentFocus;
     // Update last interaction
     lastInteraction.current = Date.now();
@@ -831,7 +833,8 @@ const App: React.FC = () => {
       timestamp: Date.now(),
       timeString: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       focus,
-      description
+      description,
+      metadata
     };
 
     setHistory(prev => {
@@ -855,6 +858,50 @@ const App: React.FC = () => {
       return newHistory;
     });
   }, [currentFocus]);
+
+  // --- AUTO-CHECK LOGIC ---
+  useEffect(() => {
+    const todaysPlan = STUDY_PLAN.find(p => p.day === currentPlanDay);
+    if (!todaysPlan || !todaysPlan.autoChecks) return;
+
+    const todayStr = getTodayString();
+    const todayRecord = history.find(r => r.date === todayStr);
+    if (!todayRecord || !todayRecord.events) return;
+
+    const completedTaskIndices = dailyProgress[currentPlanDay] || [];
+    let hasUpdates = false;
+    let newCompleted = [...completedTaskIndices];
+
+    todaysPlan.autoChecks.forEach(check => {
+      if (completedTaskIndices.includes(check.taskIndex)) return; // Already done
+
+      let count = 0;
+      todayRecord.events.forEach(ev => {
+        if (!ev.metadata) return;
+
+        if (check.type === 'count_part') {
+           if (ev.metadata.part === check.targetPart && !ev.metadata.isDrill) count++;
+        } else if (check.type === 'count_random') {
+           if (ev.metadata.isRandom) count++;
+        } else if (check.type === 'count_drill') {
+           if (ev.metadata.isDrill) count++;
+        } else if (check.type === 'count_any') {
+           if (ev.metadata.part || ev.metadata.isDrill) count++;
+        }
+      });
+
+      if (count >= check.count) {
+        newCompleted.push(check.taskIndex);
+        hasUpdates = true;
+        // Optional: Trigger a celebration sound or toast here if UI permits
+      }
+    });
+
+    if (hasUpdates) {
+      setDailyProgress(prev => ({ ...prev, [currentPlanDay]: newCompleted }));
+    }
+
+  }, [history, currentPlanDay, dailyProgress]);
 
   // Helper to update interaction time without logging event (e.g. scroll/click)
   const trackInteraction = (focusOverride?: StudyFocus) => {
@@ -1025,7 +1072,11 @@ const App: React.FC = () => {
     try {
       const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64, activePart, keywords);
       setGrade(result);
-      logEvent(`Received Grade: ${result.score}/10`);
+      logEvent(
+        `Received Grade: ${result.score}/10`,
+        undefined, 
+        { part: activePart, score: result.score, isRandom: isRandomMode }
+      );
     } catch (error) {
       console.error(error);
       alert("评分失败，请重试。");
@@ -1172,6 +1223,13 @@ const App: React.FC = () => {
                 <SentenceGym 
                   onInteract={() => trackInteraction('drill')} 
                   onRecordStart={() => setCurrentFocus('drill')}
+                  onComplete={(res) => {
+                    logEvent(
+                      "Completed Drill", 
+                      'drill', 
+                      { isDrill: true, score: res.isCorrect ? 10 : 5 }
+                    );
+                  }}
                 />
 
                 <div className="flex flex-col gap-3">
