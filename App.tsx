@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear } from 'lucide-react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
@@ -104,23 +104,34 @@ const StudyPlanCard = ({
   currentDay, 
   plan, 
   examDate,
-  onStartPractice 
+  onStartPractice,
+  completedTasks,
+  onToggleTask
 }: { 
   currentDay: number, 
   plan: StudyPlanDay, 
   examDate: Date,
-  onStartPractice: (parts: ExamPart[]) => void
+  onStartPractice: (parts: ExamPart[]) => void,
+  completedTasks: number[],
+  onToggleTask: (index: number) => void
 }) => {
   const today = new Date();
   const diffTime = Math.abs(examDate.getTime() - today.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+  // Calculate Progress
+  const totalTasks = plan.tasks.length;
+  const completedCount = completedTasks.length;
+  const progressPercentage = Math.round((completedCount / totalTasks) * 100);
+  const isDayComplete = completedCount === totalTasks && totalTasks > 0;
+
   return (
-    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-4 opacity-10">
+    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl p-6 text-white shadow-xl mb-6 relative overflow-hidden transition-all duration-500">
+      <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
         <Target size={120} />
       </div>
       
+      {/* Header Info */}
       <div className="flex justify-between items-start relative z-10 mb-4">
          <div>
            <div className="flex items-center gap-2 text-indigo-200 text-sm font-bold uppercase tracking-wider mb-1">
@@ -134,21 +145,58 @@ const StudyPlanCard = ({
          </div>
       </div>
 
+      {/* Progress Bar */}
+      <div className="relative z-10 mb-6">
+        <div className="flex justify-between text-xs font-bold text-indigo-200 mb-1">
+          <span>今日进度</span>
+          <span>{progressPercentage}%</span>
+        </div>
+        <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden backdrop-blur-sm">
+          <div 
+            className="h-full bg-green-400 transition-all duration-700 ease-out" 
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
+        </div>
+      </div>
+
+      {/* Celebration Banner */}
+      {isDayComplete && (
+        <div className="mb-4 bg-yellow-400/90 text-yellow-900 p-3 rounded-lg font-bold flex items-center justify-center gap-2 animate-in zoom-in slide-in-from-top-2 shadow-lg backdrop-blur-md ring-2 ring-yellow-200">
+          <PartyPopper className="animate-bounce" />
+          太棒了！今日任务全部完成！
+        </div>
+      )}
+
+      {/* Tasks List */}
       <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20 mb-4">
-        <p className="text-indigo-100 italic mb-3">"{plan.description}"</p>
-        <ul className="space-y-2">
-          {plan.tasks.map((task, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm font-medium">
-               <CheckCircle2 size={16} className="text-green-400 mt-0.5 shrink-0" />
-               {task}
-            </li>
-          ))}
+        <p className="text-indigo-100 italic mb-4 border-b border-white/10 pb-2">"{plan.description}"</p>
+        <ul className="space-y-3">
+          {plan.tasks.map((task, i) => {
+            const isCompleted = completedTasks.includes(i);
+            return (
+              <li 
+                key={i} 
+                onClick={() => onToggleTask(i)}
+                className={`
+                  flex items-start gap-3 text-sm font-medium cursor-pointer group p-2 rounded-lg transition-all
+                  ${isCompleted ? 'bg-green-500/20' : 'hover:bg-white/5'}
+                `}
+              >
+                 <div className={`mt-0.5 transition-colors ${isCompleted ? 'text-green-300' : 'text-indigo-300 group-hover:text-white'}`}>
+                    {isCompleted ? <CheckSquare size={18} /> : <Square size={18} />}
+                 </div>
+                 <span className={`transition-all ${isCompleted ? 'text-indigo-200 line-through decoration-indigo-400/50' : 'text-white'}`}>
+                   {task}
+                 </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
 
       <button 
         onClick={() => onStartPractice(plan.recommendedParts)}
-        className="w-full bg-yellow-400 text-indigo-900 font-bold py-3 rounded-lg hover:bg-yellow-300 transition-colors flex items-center justify-center gap-2 shadow-lg"
+        className="w-full bg-yellow-400 text-indigo-900 font-bold py-3 rounded-lg hover:bg-yellow-300 transition-colors flex items-center justify-center gap-2 shadow-lg transform active:scale-95"
       >
         <Trophy size={18} /> 开始今日练习
       </button>
@@ -175,6 +223,9 @@ const App: React.FC = () => {
   const [startDay, setStartDay] = useState<number | null>(null);
   const [currentPlanDay, setCurrentPlanDay] = useState<number>(1);
   
+  // Tracker State: { [dayNumber]: [indexOfTask1, indexOfTask2] }
+  const [dailyProgress, setDailyProgress] = useState<{ [key: number]: number[] }>({});
+
   const EXAM_DATE = new Date('2024-12-30'); 
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -190,8 +241,9 @@ const App: React.FC = () => {
     return () => { window.speechSynthesis.onvoiceschanged = null; };
   }, []);
 
-  // Initialize Plan Logic
+  // Initialize Plan Logic & Load Progress
   useEffect(() => {
+    // 1. Plan Date Logic
     const storedStart = localStorage.getItem('studyPlanStartDate');
     const today = new Date();
     
@@ -199,19 +251,54 @@ const App: React.FC = () => {
       const startDate = new Date(parseInt(storedStart));
       const diffTime = Math.abs(today.getTime() - startDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-      // If started today, diffDays is 0 or 1. Let's say Day 1.
-      // Day 1 = 0-24h after start.
       const dayNum = Math.max(1, Math.min(20, diffDays)); 
       setCurrentPlanDay(dayNum);
       setStartDay(parseInt(storedStart));
     } else {
-      // Start today
       const now = Date.now();
       localStorage.setItem('studyPlanStartDate', now.toString());
       setStartDay(now);
       setCurrentPlanDay(1);
     }
+
+    // 2. Load Task Progress
+    const storedProgress = localStorage.getItem('studyPlanProgress');
+    if (storedProgress) {
+      try {
+        setDailyProgress(JSON.parse(storedProgress));
+      } catch (e) {
+        console.error("Failed to parse progress", e);
+      }
+    }
   }, []);
+
+  // Save Progress whenever it changes
+  useEffect(() => {
+    if (Object.keys(dailyProgress).length > 0) {
+      localStorage.setItem('studyPlanProgress', JSON.stringify(dailyProgress));
+    }
+  }, [dailyProgress]);
+
+  const handleTaskToggle = (taskIndex: number) => {
+    setDailyProgress(prev => {
+      const currentDayTasks = prev[currentPlanDay] || [];
+      const isCompleted = currentDayTasks.includes(taskIndex);
+      
+      let newTasks;
+      if (isCompleted) {
+        // Remove
+        newTasks = currentDayTasks.filter(id => id !== taskIndex);
+      } else {
+        // Add
+        newTasks = [...currentDayTasks, taskIndex];
+      }
+      
+      return {
+        ...prev,
+        [currentPlanDay]: newTasks
+      };
+    });
+  };
 
   // Filter questions for active part
   const questions = QUESTION_DATABASE.filter(q => q.part === activePart);
@@ -381,12 +468,14 @@ const App: React.FC = () => {
 
       <main className="max-w-3xl mx-auto p-4 flex flex-col gap-6">
         
-        {/* STUDY PLAN DASHBOARD */}
+        {/* STUDY PLAN DASHBOARD (TRACKER UPDATED) */}
         <StudyPlanCard 
           currentDay={currentPlanDay}
           plan={todaysPlan}
           examDate={EXAM_DATE}
           onStartPractice={handlePlanPractice}
+          completedTasks={dailyProgress[currentPlanDay] || []}
+          onToggleTask={handleTaskToggle}
         />
 
         {/* Part Selector */}
