@@ -302,7 +302,7 @@ const App: React.FC = () => {
              <span className="font-bold text-indigo-600">VITE_API_KEY</span>
           </div>
           <p className="text-xs text-slate-500 mt-4">
-             Please check your Vercel Project Settings > Environment Variables.
+             Please check your Vercel Project Settings &gt; Environment Variables.
           </p>
         </div>
       </div>
