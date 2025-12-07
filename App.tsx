@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper } from 'lucide-react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
@@ -150,6 +150,72 @@ const SentenceSpeaker: React.FC<SentenceSpeakerProps> = ({
           <Volume2 size={12} /> 听标准示范 (整句)
         </button>
       )}
+    </div>
+  );
+};
+
+const StrategyCard = ({ part }: { part: ExamPart }) => {
+  let content = {
+    title: "",
+    tips: [] as string[],
+    templates: [] as string[]
+  };
+
+  switch (part) {
+    case ExamPart.Part1:
+      content = {
+        title: "Part 1: 问答题策略",
+        tips: ["必须回答两个点 (频率 + 地点)", "使用连词 'en' 连接", "保持简短，不要过多发挥"],
+        templates: ["Ik ga ... en ik ...", "Dat doe ik ... keer per week."]
+      };
+      break;
+    case ExamPart.Part2:
+      content = {
+        title: "Part 2: 单图描述策略",
+        tips: ["描述人物 + 动作", "必须联系自身经验 (Ik)", "使用现在时"],
+        templates: ["Op de foto zie ik ...", "Ik doe dit ook vaak.", "Ik vind dit leuk."]
+      };
+      break;
+    case ExamPart.Part3:
+      content = {
+        title: "Part 3: 偏好选择策略",
+        tips: ["明确表达选择 (liever)", "必须给出理由 (want/omdat)", "对比两张图的优缺点"],
+        templates: ["Ik ... liever ..., want ...", "Ik vind ... leuker/beter."]
+      };
+      break;
+    case ExamPart.Part4:
+      content = {
+        title: "Part 4: 故事讲述策略",
+        tips: ["必须有顺序逻辑 (Start-Middle-End)", "注意时态一致", "添加情感结尾"],
+        templates: ["Eerst ... (首先)", "Daarna ... (然后)", "Tot slot ... (最后)"]
+      };
+      break;
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200 rounded-xl p-4 mb-6 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="text-orange-500" size={18} />
+        <h4 className="font-bold text-orange-900 text-sm uppercase tracking-wide">{content.title}</h4>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+           <span className="text-xs font-bold text-orange-400 block mb-1">关键技巧 (Tips)</span>
+           <ul className="list-disc list-inside text-sm text-slate-700 space-y-1">
+             {content.tips.map((t, i) => <li key={i}>{t}</li>)}
+           </ul>
+        </div>
+        <div className="bg-white/60 rounded-lg p-3 border border-orange-100/50">
+           <span className="text-xs font-bold text-orange-400 block mb-1">万能模板 (Templates)</span>
+           <div className="flex flex-col gap-2">
+             {content.templates.map((t, i) => (
+               <div key={i} className="text-sm font-medium text-orange-800 bg-orange-100/50 px-2 py-1 rounded border border-orange-200/30">
+                 {t}
+               </div>
+             ))}
+           </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -471,7 +537,8 @@ const App: React.FC = () => {
     const keywords = (isDrillMode && analysis?.keyWords) ? analysis.keyWords : undefined;
 
     try {
-      const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64, keywords);
+      // Updated: Pass activePart to gradeUserAudio for specific rubric checking
+      const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64, activePart, keywords);
       setGrade(result);
     } catch (error) {
       console.error(error);
@@ -576,6 +643,9 @@ const App: React.FC = () => {
            <div className="text-center py-20 text-slate-500">该部分暂无题目。</div>
         ) : (
           <>
+            {/* Strategy Card - NEW: Shows tips from PDF based on active part */}
+            <StrategyCard part={activePart} />
+
             {/* Navigation & Tools */}
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center text-slate-500 text-sm font-medium">

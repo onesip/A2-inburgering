@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { AIAnalysis, AIGrade } from "./types";
+import { AIAnalysis, AIGrade, ExamPart } from "./types";
 
 // Helper to get client
 const getAiClient = () => {
@@ -102,7 +102,12 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
 };
 
 // 2. EXAM MODE: Grade the user's audio
-export const gradeUserAudio = async (question: string, audioBase64: string, keyWordsContext?: string[]): Promise<AIGrade> => {
+export const gradeUserAudio = async (
+  question: string, 
+  audioBase64: string, 
+  part: ExamPart,
+  keyWordsContext?: string[]
+): Promise<AIGrade> => {
   const ai = getAiClient();
 
   // If keywords are provided, this is a Grammar Drill. Adjust the persona.
@@ -112,11 +117,55 @@ export const gradeUserAudio = async (question: string, audioBase64: string, keyW
     ? `IMPORTANT: This is a GRAMMAR DRILL. The student MUST use these words: ${keyWordsContext.join(', ')}. Focus heavily on Word Order (Syntax).` 
     : "";
 
+  // Specific rubric based on PDF analysis
+  let specificCriteria = "";
+  if (!isDrill) {
+    switch (part) {
+      case ExamPart.Part1:
+        specificCriteria = `
+          CRITICAL CHECK FOR PART 1:
+          The question usually asks TWO things (e.g. "How often?" AND "Where?"). 
+          Check if the student answered BOTH parts. If they missed one part, mention it in feedback and lower the score.
+          Keep answers simple (2-3 sentences).
+        `;
+        break;
+      case ExamPart.Part2:
+        specificCriteria = `
+          CRITICAL CHECK FOR PART 2 (Image Description):
+          Did the student describe the person/action?
+          Did the student relate it to themselves (e.g., "Ik doe..." or "Ik vind...")?
+          Encourage use of present tense.
+        `;
+        break;
+      case ExamPart.Part3:
+        specificCriteria = `
+          CRITICAL CHECK FOR PART 3 (Preferences):
+          Did the student use comparison logic?
+          Look for keywords: "Liever" (prefer), "want" or "omdat" (because).
+          If they didn't give a reason, deduct points.
+        `;
+        break;
+      case ExamPart.Part4:
+        specificCriteria = `
+          CRITICAL CHECK FOR PART 4 (Storytelling):
+          Did the student tell a sequence?
+          LOOK FOR MANDATORY CONNECTORS: "Eerst" (First), "Daarna" (Then), "Tot slot" (Finally).
+          If these words are missing, suggest them strongly in feedback.
+          Simple Past (imperfectum) or Perfect (perfectum) is encouraged but Present is acceptable if clear.
+        `;
+        break;
+    }
+  }
+
   // Updated prompt to enforce Chinese feedback
   const prompt = `
     You are a Dutch Inburgering Exam (A2 level) examiner.
     The student is answering the question: "${question}".
+    Current Exam Part: ${part}.
     ${drillContext}
+    
+    ${specificCriteria}
+
     Evaluate the audio response.
     
     Return a JSON object with:
@@ -124,7 +173,7 @@ export const gradeUserAudio = async (question: string, audioBase64: string, keyW
     - transcription: what you heard (Dutch).
     - pronunciation: specific feedback on pronunciation errors (Explain in CHINESE).
     - grammarCorrection: The FULL CORRECTED DUTCH SENTENCE ONLY. Do not include Chinese explanation here. Just the correct Dutch text.
-    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). Include explanation of grammar mistakes here.
+    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). Include explanation of grammar mistakes here. Mention the specific criteria for this exam part.
   `;
 
   const response = await ai.models.generateContent({
