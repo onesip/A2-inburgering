@@ -1,6 +1,12 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AIAnalysis, AIGrade, ExamPart, DrillType, DrillResult } from "./types";
 
+// Define Models
+// Primary: The "Test Mode" or Advanced model (Gemini 3 Pro Preview)
+// Fallback: The "Normal" model (Gemini 2.5 Flash)
+const MODEL_PRIMARY = 'gemini-3-pro-preview';
+const MODEL_FALLBACK = 'gemini-2.5-flash';
+
 // Helper to get client
 const getAiClient = () => {
   // Safe access to environment variable for Vercel/Vite
@@ -15,11 +21,25 @@ const getAiClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+/**
+ * Executes a GenAI operation with fallback logic.
+ * Tries MODEL_PRIMARY first. If it fails (e.g., 429, 503), tries MODEL_FALLBACK.
+ */
+async function withModelFallback<T>(
+  operation: (model: string) => Promise<T>
+): Promise<T> {
+  try {
+    return await operation(MODEL_PRIMARY);
+  } catch (error) {
+    console.warn(`Primary model ${MODEL_PRIMARY} failed. Falling back to ${MODEL_FALLBACK}.`, error);
+    return await operation(MODEL_FALLBACK);
+  }
+}
+
 // 1. TEACHING MODE: Analyze the ideal answer
 export const analyzeIdealAnswer = async (question: string, answer: string): Promise<AIAnalysis> => {
   const ai = getAiClient();
   
-  // Updated prompt to request wordAlignment for interlinear gloss
   const prompt = `
     You are an expert Dutch tutor for Chinese A2 Inburgering students.
     Analyze this Question and Answer pair.
@@ -40,65 +60,67 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
     - relatedTopics: Other topics related to this (in Chinese).
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          grammar: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
-          },
-          vocabulary: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                word: { type: Type.STRING },
-                meaning: { type: Type.STRING },
-              }
-            }
-          },
-          tips: { type: Type.STRING },
-          structure: { type: Type.STRING },
-          syntaxFormula: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "Visual blocks for sentence structure, e.g. ['Subject', 'Verb', 'Object']"
-          },
-          keyWords: {
-             type: Type.ARRAY,
-             items: { type: Type.STRING },
-             description: "Key Dutch words/verbs from the sentence"
-          },
-          wordAlignment: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                dutch: { type: Type.STRING },
-                chinese: { type: Type.STRING }
+  return withModelFallback(async (modelId) => {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            grammar: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            vocabulary: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  word: { type: Type.STRING },
+                  meaning: { type: Type.STRING },
+                }
               }
             },
-            description: "Word-by-word alignment for gloss view"
-          },
-          realLifeContext: { type: Type.STRING },
-          relatedTopics: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
+            tips: { type: Type.STRING },
+            structure: { type: Type.STRING },
+            syntaxFormula: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Visual blocks for sentence structure, e.g. ['Subject', 'Verb', 'Object']"
+            },
+            keyWords: {
+               type: Type.ARRAY,
+               items: { type: Type.STRING },
+               description: "Key Dutch words/verbs from the sentence"
+            },
+            wordAlignment: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  dutch: { type: Type.STRING },
+                  chinese: { type: Type.STRING }
+                }
+              },
+              description: "Word-by-word alignment for gloss view"
+            },
+            realLifeContext: { type: Type.STRING },
+            relatedTopics: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            }
           }
         }
       }
-    }
-  });
+    });
 
-  if (response.text) {
-    return JSON.parse(response.text) as AIAnalysis;
-  }
-  throw new Error("No response from AI");
+    if (response.text) {
+      return JSON.parse(response.text) as AIAnalysis;
+    }
+    throw new Error(`No response text from ${modelId}`);
+  });
 };
 
 // 2. EXAM MODE: Grade the user's audio
@@ -157,7 +179,6 @@ export const gradeUserAudio = async (
     }
   }
 
-  // Updated prompt to enforce Chinese feedback
   const prompt = `
     You are a Dutch Inburgering Exam (A2 level) examiner.
     The student is answering the question: "${question}".
@@ -176,38 +197,40 @@ export const gradeUserAudio = async (
     - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). Include explanation of grammar mistakes here. Mention the specific criteria for this exam part.
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: {
-      parts: [
-        {
-          inlineData: {
-            mimeType: 'audio/webm',
-            data: audioBase64
+  return withModelFallback(async (modelId) => {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: 'audio/webm',
+              data: audioBase64
+            }
+          },
+          { text: prompt }
+        ]
+      },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.NUMBER },
+            transcription: { type: Type.STRING },
+            pronunciation: { type: Type.STRING },
+            grammarCorrection: { type: Type.STRING },
+            feedback: { type: Type.STRING },
           }
-        },
-        { text: prompt }
-      ]
-    },
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          score: { type: Type.NUMBER },
-          transcription: { type: Type.STRING },
-          pronunciation: { type: Type.STRING },
-          grammarCorrection: { type: Type.STRING },
-          feedback: { type: Type.STRING },
         }
       }
-    }
-  });
+    });
 
-  if (response.text) {
-    return JSON.parse(response.text) as AIGrade;
-  }
-  throw new Error("No response from AI");
+    if (response.text) {
+      return JSON.parse(response.text) as AIGrade;
+    }
+    throw new Error(`No response text from ${modelId}`);
+  });
 };
 
 // 3. SENTENCE GYM: Grade sentence drills
@@ -239,35 +262,37 @@ export const gradeDrillAudio = async (
     - betterVersion: The perfect version of the sentence.
   `;
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: {
-      parts: [
-        {
-          inlineData: {
-            mimeType: 'audio/webm',
-            data: audioBase64
+  return withModelFallback(async (modelId) => {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: 'audio/webm',
+              data: audioBase64
+            }
+          },
+          { text: prompt }
+        ]
+      },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            isCorrect: { type: Type.BOOLEAN },
+            transcription: { type: Type.STRING },
+            feedback: { type: Type.STRING },
+            betterVersion: { type: Type.STRING }
           }
-        },
-        { text: prompt }
-      ]
-    },
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          isCorrect: { type: Type.BOOLEAN },
-          transcription: { type: Type.STRING },
-          feedback: { type: Type.STRING },
-          betterVersion: { type: Type.STRING }
         }
       }
-    }
-  });
+    });
 
-  if (response.text) {
-    return JSON.parse(response.text) as DrillResult;
-  }
-  throw new Error("No response from AI");
+    if (response.text) {
+      return JSON.parse(response.text) as DrillResult;
+    }
+    throw new Error(`No response text from ${modelId}`);
+  });
 };
