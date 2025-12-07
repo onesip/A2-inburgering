@@ -4,6 +4,39 @@ import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
 
+// --- UTILS ---
+
+/**
+ * Helper to force browser to use a Dutch voice.
+ * Browsers often default to English if 'voice' object is not explicitly set,
+ * even if 'lang' is set to 'nl-NL'.
+ */
+const speakDutch = (text: string, rate: number = 0.9) => {
+  // Cancel any currently playing audio to avoid overlap
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'nl-NL';
+  utterance.rate = rate;
+
+  // Get all available voices
+  const voices = window.speechSynthesis.getVoices();
+  
+  // Try to find a Dutch voice
+  // 1. Exact match for Netherlands
+  // 2. Any Dutch match (could be Belgian Dutch, which is fine)
+  const dutchVoice = voices.find(v => v.lang === 'nl-NL') || 
+                     voices.find(v => v.lang.toLowerCase().includes('nl'));
+
+  if (dutchVoice) {
+    utterance.voice = dutchVoice;
+  } else {
+    console.warn("No specific Dutch voice found. Browser will use default.");
+  }
+
+  window.speechSynthesis.speak(utterance);
+};
+
 // --- COMPONENTS ---
 
 const Spinner = () => (
@@ -16,17 +49,14 @@ const Spinner = () => (
 const WordSpeaker = ({ text }: { text: string }) => {
   const speak = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'nl-NL';
-    utterance.rate = 0.8;
-    window.speechSynthesis.speak(utterance);
+    speakDutch(text, 0.8);
   };
 
   return (
     <span 
       onClick={speak} 
       className="cursor-pointer hover:text-orange-600 hover:bg-orange-100 rounded px-0.5 transition-colors border-b border-dotted border-slate-400"
-      title="Click to pronounce"
+      title="点击发音"
     >
       {text}
     </span>
@@ -35,10 +65,7 @@ const WordSpeaker = ({ text }: { text: string }) => {
 
 const SentenceSpeaker = ({ text }: { text: string }) => {
   const speak = () => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'nl-NL';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    speakDutch(text, 0.9);
   };
 
   const words = text.split(' ');
@@ -57,7 +84,7 @@ const SentenceSpeaker = ({ text }: { text: string }) => {
         onClick={speak}
         className="self-start flex items-center gap-2 text-sm text-blue-600 font-semibold hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full"
       >
-        <Volume2 size={14} /> Listen
+        <Volume2 size={14} /> 听发音
       </button>
     </div>
   );
@@ -87,13 +114,13 @@ const StudyPlanCard = ({
       <div className="flex justify-between items-start relative z-10 mb-4">
          <div>
            <div className="flex items-center gap-2 text-indigo-200 text-sm font-bold uppercase tracking-wider mb-1">
-             <Calendar size={14} /> 20-Day Spiral Plan
+             <Calendar size={14} /> 20天螺旋式突击计划
            </div>
-           <h2 className="text-2xl font-bold">Day {plan.day}: {plan.title}</h2>
+           <h2 className="text-2xl font-bold">第 {plan.day} 天: {plan.title}</h2>
          </div>
          <div className="text-right">
            <div className="text-3xl font-bold text-yellow-300">{diffDays}</div>
-           <div className="text-xs text-indigo-200 uppercase font-bold">Days to Exam</div>
+           <div className="text-xs text-indigo-200 uppercase font-bold">距离考试(天)</div>
          </div>
       </div>
 
@@ -113,7 +140,7 @@ const StudyPlanCard = ({
         onClick={() => onStartPractice(plan.recommendedParts)}
         className="w-full bg-yellow-400 text-indigo-900 font-bold py-3 rounded-lg hover:bg-yellow-300 transition-colors flex items-center justify-center gap-2 shadow-lg"
       >
-        <Trophy size={18} /> Start Today's Practice
+        <Trophy size={18} /> 开始今日练习
       </button>
     </div>
   );
@@ -140,6 +167,16 @@ const App: React.FC = () => {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Pre-load voices to ensure they are available when user clicks
+  useEffect(() => {
+    const loadVoices = () => {
+       window.speechSynthesis.getVoices();
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
 
   // Initialize Plan Logic
   useEffect(() => {
@@ -216,10 +253,7 @@ const App: React.FC = () => {
 
   const playQuestionAudio = () => {
     if (!currentQuestion) return;
-    const utterance = new SpeechSynthesisUtterance(currentQuestion.questionDutch);
-    utterance.lang = 'nl-NL';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    speakDutch(currentQuestion.questionDutch, 0.9);
   };
 
   const handleAnalyze = async () => {
@@ -231,7 +265,7 @@ const App: React.FC = () => {
       setAnalysis(result);
     } catch (error) {
       console.error(error);
-      alert("Failed to analyze. Please check your connection or API key.");
+      alert("分析失败，请检查网络或 API Key。");
     } finally {
       setIsAnalyzing(false);
     }
@@ -253,7 +287,7 @@ const App: React.FC = () => {
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Microphone access denied or not available.");
+      alert("无法访问麦克风。");
     }
   };
 
@@ -282,7 +316,7 @@ const App: React.FC = () => {
       setGrade(result);
     } catch (error) {
       console.error(error);
-      alert("Failed to grade audio. Please try again.");
+      alert("评分失败，请重试。");
     } finally {
       setIsGrading(false);
     }
@@ -293,16 +327,16 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
         <div className="bg-white p-8 rounded-xl shadow-lg max-w-md text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h1 className="text-xl font-bold mb-2">API Key Missing</h1>
+          <h1 className="text-xl font-bold mb-2">缺少 API Key</h1>
           <p className="text-slate-600 mb-4">
-            The application cannot connect to Google Gemini AI.
+            应用无法连接到 Google Gemini AI。
           </p>
           <div className="bg-slate-50 p-3 rounded text-left text-sm text-slate-700 font-mono overflow-x-auto border border-slate-200">
-             Vercel Environment Variable:<br/>
+             Vercel 环境变量名:<br/>
              <span className="font-bold text-indigo-600">VITE_API_KEY</span>
           </div>
           <p className="text-xs text-slate-500 mt-4">
-             Please check your Vercel Project Settings &gt; Environment Variables.
+             请检查 Vercel 项目设置 &gt; Environment Variables.
           </p>
         </div>
       </div>
@@ -319,10 +353,10 @@ const App: React.FC = () => {
         <div className="max-w-3xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <GraduationCap className="text-orange-200" />
-            <h1 className="font-bold text-lg md:text-xl tracking-tight">Inburgering A2 Coach</h1>
+            <h1 className="font-bold text-lg md:text-xl tracking-tight">荷兰语融入考试 A2 教练</h1>
           </div>
           <div className="text-xs font-bold bg-orange-700/50 border border-orange-500/50 px-3 py-1 rounded-full text-orange-50">
-            AI Tutor
+            AI 助教
           </div>
         </div>
       </header>
@@ -355,7 +389,7 @@ const App: React.FC = () => {
         </div>
 
         {questions.length === 0 ? (
-           <div className="text-center py-20 text-slate-500">No questions loaded for this part yet.</div>
+           <div className="text-center py-20 text-slate-500">该部分暂无题目。</div>
         ) : (
           <>
             {/* Navigation & Tools */}
@@ -366,7 +400,7 @@ const App: React.FC = () => {
                   disabled={currentQuestionIndex === 0}
                   className="flex items-center gap-1 disabled:opacity-30 hover:text-blue-600 transition-colors"
                 >
-                  <ChevronLeft size={16} /> Previous
+                  <ChevronLeft size={16} /> 上一题
                 </button>
                 <span className="bg-slate-200 px-2 py-0.5 rounded text-xs text-slate-600">
                   {currentQuestionIndex + 1} / {questions.length}
@@ -376,7 +410,7 @@ const App: React.FC = () => {
                   disabled={currentQuestionIndex === questions.length - 1}
                   className="flex items-center gap-1 disabled:opacity-30 hover:text-blue-600 transition-colors"
                 >
-                  Next <ChevronRight size={16} />
+                  下一题 <ChevronRight size={16} />
                 </button>
               </div>
 
@@ -385,7 +419,7 @@ const App: React.FC = () => {
                 onClick={handleRandom}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white py-2 rounded-lg shadow hover:from-teal-600 hover:to-teal-700 transition-all font-semibold text-sm"
               >
-                <Shuffle size={16} /> Random Question (Build Muscle Memory)
+                <Shuffle size={16} /> 随机练习 (培养语感)
               </button>
             </div>
 
@@ -393,7 +427,7 @@ const App: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden ring-1 ring-slate-100">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 border-b border-blue-100 relative">
                 <span className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2 block flex items-center gap-1">
-                   <Lightbulb size={12} /> Exam Question
+                   <Lightbulb size={12} /> 考试真题
                 </span>
                 
                 <div className="flex gap-3 items-start">
@@ -403,7 +437,7 @@ const App: React.FC = () => {
                   <button 
                     onClick={playQuestionAudio}
                     className="flex-shrink-0 bg-blue-100 p-2 rounded-full text-blue-700 hover:bg-blue-200 hover:scale-105 transition-all shadow-sm"
-                    title="Listen to question"
+                    title="听问题"
                   >
                     <Volume2 size={20} />
                   </button>
@@ -427,7 +461,7 @@ const App: React.FC = () => {
               <div className="p-5">
                  <div className="flex justify-between items-center mb-4">
                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
-                     Standard Answers
+                     标准范例
                    </h3>
                    <button 
                     onClick={handleAnalyze}
@@ -435,7 +469,7 @@ const App: React.FC = () => {
                     className="flex items-center gap-2 text-sm bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-md shadow-indigo-200 disabled:opacity-70"
                    >
                      {isAnalyzing ? <Spinner /> : <BookOpen size={16} />}
-                     {isAnalyzing ? "Analyzing..." : "Chew it up!"}
+                     {isAnalyzing ? "正在分析..." : "老师帮我拆解!"}
                    </button>
                  </div>
 
@@ -443,7 +477,7 @@ const App: React.FC = () => {
                     {currentQuestion.idealSamples.map((sample, idx) => (
                       <div key={sample.id} className="relative">
                         <div className="absolute -left-3 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-300 to-orange-100 rounded-full"></div>
-                        <div className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">Option {idx + 1}</div>
+                        <div className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">选项 {idx + 1}</div>
                         <SentenceSpeaker text={sample.text} />
                       </div>
                     ))}
@@ -455,13 +489,13 @@ const App: React.FC = () => {
                 <div className="m-5 mt-0 bg-indigo-50/80 rounded-xl p-5 border border-indigo-100 animate-in fade-in slide-in-from-top-4 backdrop-blur-sm">
                   <h4 className="font-bold text-indigo-900 mb-4 flex items-center gap-2 text-lg border-b border-indigo-200 pb-2">
                     <GraduationCap size={20} /> 
-                    Teacher's Breakdown (老师详解)
+                    名师详解
                   </h4>
                   
                   <div className="space-y-6">
                     {/* Structure */}
                     <div>
-                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-1">Sentence Structure (句式结构)</span>
+                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-1">句式结构</span>
                       <div className="bg-white p-3 rounded-lg border border-indigo-100 text-indigo-900 shadow-sm">
                         {analysis.structure}
                       </div>
@@ -469,7 +503,7 @@ const App: React.FC = () => {
 
                     {/* Vocabulary */}
                     <div>
-                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-1">Key Vocabulary (重点词汇)</span>
+                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-1">核心词汇</span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {analysis.vocabulary.map((v, i) => (
                           <div key={i} className="flex justify-between bg-white px-3 py-2 rounded-lg border border-indigo-100 shadow-sm hover:border-indigo-300 transition-colors">
@@ -484,7 +518,7 @@ const App: React.FC = () => {
                        {/* Grammar Tip */}
                        <div className="bg-orange-50 rounded-lg p-3 border border-orange-100">
                           <span className="font-bold text-xs text-orange-600 uppercase tracking-wider block mb-1 flex items-center gap-1">
-                             <Lightbulb size={12} /> Grammar Tip
+                             <Lightbulb size={12} /> 语法点拨
                           </span>
                           <ul className="list-disc list-inside text-slate-700 text-sm space-y-1">
                             {analysis.grammar.map((g, i) => <li key={i}>{g}</li>)}
@@ -494,7 +528,7 @@ const App: React.FC = () => {
                        {/* Context */}
                        <div className="bg-green-50 rounded-lg p-3 border border-green-100">
                           <span className="font-bold text-xs text-green-700 uppercase tracking-wider block mb-1 flex items-center gap-1">
-                             <MapPin size={12} /> Where to use (使用场景)
+                             <MapPin size={12} /> 使用场景
                           </span>
                           <p className="text-slate-700 text-sm">{analysis.realLifeContext}</p>
                        </div>
@@ -503,7 +537,7 @@ const App: React.FC = () => {
                     {/* Related Topics */}
                     <div className="bg-white/50 p-3 rounded-lg border border-indigo-100">
                       <span className="font-bold text-xs text-indigo-500 uppercase tracking-wider block mb-2 flex items-center gap-1">
-                        <List size={12} /> Related Exam Topics (相关考题)
+                        <List size={12} /> 相关考点
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {analysis.relatedTopics.map((topic, i) => (
@@ -515,7 +549,7 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="text-xs text-right text-indigo-400 italic">
-                       * Tip: {analysis.tips}
+                       * 记忆小贴士: {analysis.tips}
                     </div>
                   </div>
                 </div>
@@ -526,7 +560,7 @@ const App: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 to-pink-500"></div>
               <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 text-lg">
-                <Mic className="text-red-500" /> Exam Simulation
+                <Mic className="text-red-500" /> 模拟考试
               </h3>
               
               <div className="flex flex-col items-center gap-6">
@@ -542,13 +576,13 @@ const App: React.FC = () => {
                  >
                    {isRecording ? <Square size={36} fill="currentColor" /> : <Mic size={36} />}
                    {isRecording && (
-                     <span className="absolute -bottom-10 text-xs font-bold text-red-500 animate-pulse bg-red-100 px-2 py-1 rounded">Recording...</span>
+                     <span className="absolute -bottom-10 text-xs font-bold text-red-500 animate-pulse bg-red-100 px-2 py-1 rounded">录音中...</span>
                    )}
                  </button>
                  <p className="text-sm text-slate-500 text-center max-w-sm">
                    {isRecording 
-                     ? "Speak clearly. Tap stop when done." 
-                     : "Tap the microphone to practice. Get instant AI grading."}
+                     ? "请清晰朗读。完成后点击停止。" 
+                     : "点击麦克风开始练习，AI 即时打分。"}
                  </p>
               </div>
 
@@ -556,14 +590,14 @@ const App: React.FC = () => {
               {isGrading && (
                 <div className="mt-8 text-center text-slate-500 flex flex-col items-center gap-3 animate-pulse">
                   <RefreshCw className="animate-spin text-blue-500" size={24} />
-                  <span className="font-medium">Grading your response...</span>
+                  <span className="font-medium">正在评分中...</span>
                 </div>
               )}
 
               {grade && !isGrading && (
                 <div className="mt-8 border-t border-slate-100 pt-6 animate-in zoom-in-95 duration-300">
                   <div className="flex items-center justify-between mb-6">
-                    <h4 className="font-bold text-slate-800 text-lg">Score Card</h4>
+                    <h4 className="font-bold text-slate-800 text-lg">成绩单</h4>
                     <div className={`px-5 py-2 rounded-xl font-bold text-2xl shadow-sm ${
                       grade.score >= 8 ? 'bg-green-100 text-green-700 border border-green-200' :
                       grade.score >= 6 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
@@ -575,27 +609,27 @@ const App: React.FC = () => {
 
                   <div className="space-y-4">
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">You said</span>
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block mb-2">你的回答</span>
                       <p className="text-slate-800 font-medium leading-relaxed">"{grade.transcription}"</p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
                        <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                           <span className="flex items-center gap-1.5 text-xs font-bold text-green-700 uppercase tracking-wide mb-2">
-                            <CheckCircle2 size={14} /> Grammar Fix
+                            <CheckCircle2 size={14} /> 语法修正
                           </span>
                           <p className="text-green-900 text-sm font-medium">{grade.grammarCorrection}</p>
                        </div>
                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                           <span className="flex items-center gap-1.5 text-xs font-bold text-orange-700 uppercase tracking-wide mb-2">
-                            <Volume2 size={14} /> Pronunciation
+                            <Volume2 size={14} /> 发音指导
                           </span>
                           <p className="text-orange-900 text-sm">{grade.pronunciation}</p>
                        </div>
                     </div>
 
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                       <span className="text-xs font-bold text-blue-700 uppercase tracking-wide block mb-2">Coach's Feedback</span>
+                       <span className="text-xs font-bold text-blue-700 uppercase tracking-wide block mb-2">教练点评</span>
                        <p className="text-blue-900 text-sm leading-relaxed">{grade.feedback}</p>
                     </div>
                   </div>

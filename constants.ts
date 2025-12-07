@@ -4,168 +4,168 @@ export const STUDY_PLAN: StudyPlanDay[] = [
   // --- PHASE 1: FOUNDATION (PART 1) ---
   {
     day: 1,
-    title: "The Basics & Yourself",
+    title: "基础与个人介绍",
     focus: "Part 1: Interview",
-    description: "Start simple. Focus on mastering questions about yourself. Short, correct sentences.",
-    tasks: ["Practice 5 'Part 1' questions.", "Focus on 'Ik ben...', 'Ik woon...', 'Ik doe...'."],
+    description: "万事开头难。今天专注于掌握关于你自己的基础问题。使用简短、正确的句子。",
+    tasks: ["练习 5 道 'Part 1' 题目。", "重点练习句型: 'Ik ben...', 'Ik woon...', 'Ik doe...'."],
     recommendedParts: [ExamPart.Part1]
   },
   {
     day: 2,
-    title: "Work & Education",
+    title: "工作与教育",
     focus: "Part 1: Interview",
-    description: "Expand to work topics. Learn vocabulary for professions and study.",
-    tasks: ["Practice 5 'Part 1' questions.", "Learn 3 new job titles in Dutch."],
+    description: "扩展到工作话题。学习职业名称和学习相关的词汇。",
+    tasks: ["练习 5 道 'Part 1' 题目。", "学习 3 个荷兰语职业名称。"],
     recommendedParts: [ExamPart.Part1]
   },
   {
     day: 3,
-    title: "Family & Housing",
+    title: "家庭与住房",
     focus: "Part 1: Interview",
-    description: "Talk about your house and family. Practice numbers (years, ages).",
-    tasks: ["Practice 5 'Part 1' questions.", "Describe your living room in 3 sentences."],
+    description: "谈论你的房子和家人。练习数字（年份、年龄）。",
+    tasks: ["练习 5 道 'Part 1' 题目。", "用 3 句话描述你的客厅。"],
     recommendedParts: [ExamPart.Part1]
   },
   {
     day: 4,
-    title: "Daily Life & Review",
+    title: "日常生活与复习",
     focus: "Part 1: Review",
-    description: "First mini-review. Random questions from Part 1 to build speed.",
-    tasks: ["Use 'Random Question' for Part 1 (10 times).", "Aim for < 5 seconds hesitation."],
+    description: "第一次小复习。随机抽取 Part 1 题目以提高反应速度。",
+    tasks: ["使用 '随机练习' 功能练习 Part 1 (10 次)。", "目标：犹豫时间小于 5 秒。"],
     recommendedParts: [ExamPart.Part1]
   },
 
   // --- PHASE 2: OBSERVATION (PART 2) + SPIRAL REVIEW ---
   {
     day: 5,
-    title: "What do you see?",
+    title: "你看到了什么？",
     focus: "Part 2: Description",
-    description: "Intro to Part 2. Simple Subject-Verb-Rest sentences. Don't interpret, just describe.",
-    tasks: ["Practice 4 'Part 2' questions.", "Review 2 'Part 1' questions (Spiral)."],
+    description: "Part 2 入门。使用简单的主语-动词-其余成分 (S-V-R) 结构。不要过度解读，只描述看到的。",
+    tasks: ["练习 4 道 'Part 2' 题目。", "复习 2 道 'Part 1' 题目 (螺旋式复习)。"],
     recommendedParts: [ExamPart.Part2, ExamPart.Part1]
   },
   {
     day: 6,
-    title: "Action Verbs",
+    title: "动作动词",
     focus: "Part 2: Description",
-    description: "Focus on verbs: Lopen, praten, koken, kopen. What is the person doing?",
-    tasks: ["Practice 5 'Part 2' questions.", "Focus on correct verb conjugation (stam+t)."],
+    description: "关注动词：Lopen (走), praten (说), koken (做饭), kopen (买)。那个人在做什么？",
+    tasks: ["练习 5 道 'Part 2' 题目。", "注意动词变位 (stam+t)。"],
     recommendedParts: [ExamPart.Part2]
   },
   {
     day: 7,
-    title: "Details & Colors",
+    title: "细节与颜色",
     focus: "Part 2: Description",
-    description: "Add details. 'De rode auto', 'twee mensen'.",
-    tasks: ["Practice 5 'Part 2' questions.", "Review 3 'Part 1' questions."],
+    description: "添加细节。例如 'De rode auto' (红色的车), 'twee mensen' (两个人)。",
+    tasks: ["练习 5 道 'Part 2' 题目。", "复习 3 道 'Part 1' 题目。"],
     recommendedParts: [ExamPart.Part2, ExamPart.Part1]
   },
   {
     day: 8,
-    title: "Problem & Solution",
+    title: "问题与解决方案",
     focus: "Part 2: Complex Situations",
-    description: "Scenarios: Fire, broken car, sick. Who do they call?",
-    tasks: ["Practice 5 'Part 2' questions.", "Learn words: Brandweer, Politie, Dokter, Monteur."],
+    description: "情景：火灾、车坏了、生病。他们该给谁打电话？",
+    tasks: ["练习 5 道 'Part 2' 题目。", "学习词汇: Brandweer (消防), Politie (警察), Dokter (医生), Monteur (技工)。"],
     recommendedParts: [ExamPart.Part2]
   },
   {
     day: 9,
-    title: "Part 2 Mastery Check",
+    title: "Part 2 熟练度检查",
     focus: "Part 2: Speed",
-    description: "Random Part 2 questions. Try to answer immediately.",
-    tasks: ["Do 10 Random questions from Part 2.", "Do 2 Random questions from Part 1."],
+    description: "随机 Part 2 提问。尝试立即作答。",
+    tasks: ["做 10 道 Part 2 随机题。", "做 2 道 Part 1 随机题。"],
     recommendedParts: [ExamPart.Part2, ExamPart.Part1]
   },
 
   // --- PHASE 3: OPINIONS (PART 3) + SPIRAL REVIEW ---
   {
     day: 10,
-    title: "Making Choices",
+    title: "做出选择",
     focus: "Part 3: Preference",
-    description: "Intro to Part 3. 'Ik doe liever...', 'Ik vind... leuker'.",
-    tasks: ["Practice 4 'Part 3' questions.", "Memorize: 'Liever' (preference) vs 'Leuker' (fun)."],
+    description: "Part 3 入门。句型：'Ik doe liever...' (我更喜欢做...), 'Ik vind... leuker' (我觉得...更有趣)。",
+    tasks: ["练习 4 道 'Part 3' 题目。", "背诵区别: 'Liever' (更喜欢/动词副词) vs 'Leuker' (更有趣/形容词比较级)。"],
     recommendedParts: [ExamPart.Part3]
   },
   {
     day: 11,
-    title: "The 'Omdat/Want' Rule",
+    title: "Omdat/Want 规则",
     focus: "Part 3: Grammar",
-    description: "Crucial grammar! 'Want' + normal order. 'Omdat' + verb at end.",
-    tasks: ["Practice 5 'Part 3' questions using ONLY 'Want'.", "Review 2 'Part 2' questions."],
+    description: "关键语法！'Want' + 正常语序。 'Omdat' + 动词放句尾。",
+    tasks: ["练习 5 道 'Part 3' 题目，只使用 'Want'。", "复习 2 道 'Part 2' 题目。"],
     recommendedParts: [ExamPart.Part3, ExamPart.Part2]
   },
   {
     day: 12,
-    title: "Scenarios: Work vs Home",
+    title: "情景：工作与家庭",
     focus: "Part 3: Topics",
-    description: "Compare working environments, living situations, and travel.",
-    tasks: ["Practice 5 'Part 3' questions.", "Review 2 'Part 1' questions."],
+    description: "比较工作环境、居住情况和交通方式。",
+    tasks: ["练习 5 道 'Part 3' 题目。", "复习 2 道 'Part 1' 题目。"],
     recommendedParts: [ExamPart.Part3, ExamPart.Part1]
   },
   {
     day: 13,
-    title: "Scenarios: Free Time",
+    title: "情景：空闲时间",
     focus: "Part 3: Topics",
-    description: "Compare sports, food, and hobbies. Give a clear reason.",
-    tasks: ["Practice 5 'Part 3' questions.", "Review 2 'Part 2' questions."],
+    description: "比较运动、食物和爱好。给出一个清晰的理由。",
+    tasks: ["练习 5 道 'Part 3' 题目。", "复习 2 道 'Part 2' 题目。"],
     recommendedParts: [ExamPart.Part3, ExamPart.Part2]
   },
   {
     day: 14,
-    title: "Opinion Master",
+    title: "观点表达大师",
     focus: "Part 3 & Review",
-    description: "Mix it up. Part 3 requires thinking. Practice being decisive.",
-    tasks: ["10 Random Part 3 questions.", "3 Random Part 1 questions."],
+    description: "混合练习。Part 3 需要思考。练习果断地表达。",
+    tasks: ["10 道 Part 3 随机题。", "3 道 Part 1 随机题。"],
     recommendedParts: [ExamPart.Part3, ExamPart.Part1]
   },
 
   // --- PHASE 4: STORYTELLING (PART 4) & FINAL SPRINT ---
   {
     day: 15,
-    title: "Sequence Words",
+    title: "连接词",
     focus: "Part 4: Story",
-    description: "Intro to Part 4. The Magic Trio: 'Eerst', 'Daarna', 'Tot slot'.",
-    tasks: ["Practice 3 'Part 4' questions.", "Use the magic trio in every answer."],
+    description: "Part 4 入门。魔法三剑客：'Eerst' (首先), 'Daarna' (然后), 'Tot slot' (最后)。",
+    tasks: ["练习 3 道 'Part 4' 题目。", "在每个回答中强制使用这三个词。"],
     recommendedParts: [ExamPart.Part4]
   },
   {
     day: 16,
-    title: "Past Tense (Simple)",
+    title: "过去时 (简单版)",
     focus: "Part 4: Grammar",
-    description: "Stories are often in the past. 'Hij heeft gekookt'. Keep it simple.",
-    tasks: ["Practice 4 'Part 4' questions.", "Review 2 'Part 3' questions."],
+    description: "故事通常发生在过去。使用完成时 'Hij heeft gekookt'。保持简单。",
+    tasks: ["练习 4 道 'Part 4' 题目。", "复习 2 道 'Part 3' 题目。"],
     recommendedParts: [ExamPart.Part4, ExamPart.Part3]
   },
   {
     day: 17,
-    title: "Daily Routines",
+    title: "日常生活流程",
     focus: "Part 4: Story",
-    description: "Cooking, Sleeping, Travel stories. Connect the images logically.",
-    tasks: ["Practice 4 'Part 4' questions.", "Review 2 'Part 2' questions."],
+    description: "做饭、睡觉、旅行的故事。逻辑性地连接图片。",
+    tasks: ["练习 4 道 'Part 4' 题目。", "复习 2 道 'Part 2' 题目。"],
     recommendedParts: [ExamPart.Part4, ExamPart.Part2]
   },
   {
     day: 18,
-    title: "Full Spiral Review",
+    title: "全方位螺旋复习",
     focus: "All Parts",
-    description: "A heavy practice day. Touching all 4 parts.",
-    tasks: ["2 questions from Part 1.", "2 questions from Part 2.", "2 questions from Part 3.", "2 questions from Part 4."],
+    description: "高强度练习日。覆盖所有 4 个部分。",
+    tasks: ["Part 1, 2, 3, 4 各做 2 道题。", "注意切换思维模式。"],
     recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
   },
   {
     day: 19,
-    title: "Mock Exam 1",
+    title: "模拟考试 1",
     focus: "Simulation",
-    description: "Treat this like the real exam. No pausing. Record everything.",
-    tasks: ["Use 'Random' button for 20 minutes.", "Do not restart recordings. Keep going."],
+    description: "像真正的考试一样对待。不要暂停。录下所有内容。",
+    tasks: ["使用 '随机' 按钮进行 20 分钟模拟。", "不要重录。坚持说下去。"],
     recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
   },
   {
     day: 20,
-    title: "Final Confidence",
+    title: "建立终极自信",
     focus: "Relax & Shine",
-    description: "You are ready. Light practice today to boost confidence.",
-    tasks: ["Do your favorite 5 questions.", "Tell yourself: 'Ik kan dit!' (I can do this!)"],
+    description: "你准备好了。今天轻松练习，增强自信。",
+    tasks: ["做你最擅长的 5 道题。", "对自己说：'Ik kan dit!' (我能行！)"],
     recommendedParts: [ExamPart.Part1, ExamPart.Part2, ExamPart.Part3, ExamPart.Part4]
   }
 ];
@@ -303,7 +303,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Kees doet boodschappen op de markt. Vertel wat Kees ziet liggen. Vertel ook wat u van deze boodschappen vindt.",
     questionChinese: "Kees在市场买东西。说说Kees看到了什么。也说说您觉得这些东西怎么样。",
-    imageDescription: "Context: Market stall with vegetables (peppers, zucchini, tomatoes).",
+    imageDescription: "场景: 市场摊位上有蔬菜（甜椒、西葫芦、西红柿）。",
     idealSamples: [
       { id: 1, text: "Kees ziet paprika's en courgettes. Ik vind die groentes lekker en gezond." },
       { id: 2, text: "Kees ziet tomaten en bloemkool. Ik vind groenten van de markt altijd vers." }
@@ -314,7 +314,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "José is aan het werk. Wat is haar beroep? Vertel ook wat ze nu doet.",
     questionChinese: "José正在工作。她的职业是什么？说说她现在在做什么。",
-    imageDescription: "Context: Woman in office attire typing on a laptop.",
+    imageDescription: "场景: 穿着职业装的女性在笔记本电脑上打字。",
     idealSamples: [
       { id: 1, text: "José is dokter. Ze werkt op haar laptop." },
       { id: 2, text: "Zij is secretaresse. Ze beantwoordt een e-mail." }
@@ -325,7 +325,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Meneer Jansen is in de winkel. Wat wil hij kopen? Vertel ook hoe hij betaalt.",
     questionChinese: "Jansen先生在商店里。他想买什么？说说他怎么付款。",
-    imageDescription: "Context: Man holding a coat, standing at counter with bank card.",
+    imageDescription: "场景: 男士拿着一件外套，站在柜台前拿着银行卡。",
     idealSamples: [
       { id: 1, text: "Meneer Jansen wil een nieuwe jas kopen. Hij betaalt met zijn pinpas." },
       { id: 2, text: "Hij koopt kleren. Hij betaalt niet met contant geld, maar met de pin." }
@@ -336,7 +336,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Er is brand in het huis. Wat doet de vrouw? Vertel ook wie zij belt.",
     questionChinese: "房子着火了。那个女人在做什么？说说她在给谁打电话。",
-    imageDescription: "Context: Smoke in kitchen. Woman running out calling 112.",
+    imageDescription: "场景: 厨房冒烟。女人跑出去打112求救。",
     idealSamples: [
       { id: 1, text: "De vrouw loopt snel naar buiten. Zij belt de brandweer." },
       { id: 2, text: "Ze gaat het huis uit. Ze belt 112 voor hulp." }
@@ -347,7 +347,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "De familie de Vries is in het park. Wat doen de kinderen? Vertel ook wat de ouders doen.",
     questionChinese: "De Vries一家在公园里。孩子们在做什么？也说说父母在做什么。",
-    imageDescription: "Context: Kids playing ball. Parents sitting on a bench.",
+    imageDescription: "场景: 孩子们在玩球。父母坐在长椅上。",
     idealSamples: [
       { id: 1, text: "De kinderen spelen met een bal. De ouders zitten op een bankje." },
       { id: 2, text: "De kinderen zijn aan het voetballen. De vader en moeder kijken toe." }
@@ -358,7 +358,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Fatima is bij de huisarts. Wat is het probleem? Vertel ook wat de dokter doet.",
     questionChinese: "Fatima在看家庭医生。怎么了？也说说医生在做什么。",
-    imageDescription: "Context: Fatima holds her ear in pain. Doctor looks in ear.",
+    imageDescription: "场景: Fatima捂着耳朵很痛苦。医生在检查耳朵。",
     idealSamples: [
       { id: 1, text: "Fatima heeft oorpijn. De dokter kijkt in haar oor." },
       { id: 2, text: "Zij heeft pijn aan haar hoofd. De dokter onderzoekt haar." }
@@ -369,7 +369,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Mehmet is op school. Wat doet hij? Vertel ook wat de leraar doet.",
     questionChinese: "Mehmet在学校。他在做什么？也说说老师在做什么。",
-    imageDescription: "Context: Student writing in notebook. Teacher writing on blackboard.",
+    imageDescription: "场景: 学生在笔记本上写字。老师在黑板上写字。",
     idealSamples: [
       { id: 1, text: "Mehmet schrijft in zijn schrift. De leraar schrijft op het bord." },
       { id: 2, text: "Hij maakt een opdracht. De meester geeft uitleg." }
@@ -380,7 +380,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "Mevrouw Smit is in de keuken. Wat maakt ze klaar? Vertel ook wat ze gebruikt.",
     questionChinese: "Smit女士在厨房。她在做什么吃的？也说说她在用什么。",
-    imageDescription: "Context: Woman frying an egg. Using a pan.",
+    imageDescription: "场景: 女士在煎蛋。使用平底锅。",
     idealSamples: [
       { id: 1, text: "Mevrouw Smit bakt een ei. Ze gebruikt een pan." },
       { id: 2, text: "Ze maakt het ontbijt klaar. Ze kookt op het fornuis." }
@@ -391,7 +391,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part2,
     questionDutch: "De auto is kapot. Wat doet de man? Vertel ook wie hem helpt.",
     questionChinese: "车坏了。那个人在做什么？也说说谁在帮他。",
-    imageDescription: "Context: Man looking under hood. Mechanic arriving.",
+    imageDescription: "场景: 男士在看引擎盖下面。技工/路援到达。",
     idealSamples: [
       { id: 1, text: "De man kijkt naar de motor. De monteur helpt hem." },
       { id: 2, text: "Hij belt de garage. De wegenwacht komt helpen." }
@@ -400,9 +400,9 @@ export const QUESTION_DATABASE: QuestionItem[] = [
   {
     id: 'p2-q10',
     part: ExamPart.Part2,
-    questionDutch: "Het is feest. Wat doen de mensen? Vertel ook wat ze eten.",
+    questionDutch: "Het is feest. Wat doet de mensen? Vertel ook wat ze eten.",
     questionChinese: "现在是聚会。人们在做什么？也说说他们在吃什么。",
-    imageDescription: "Context: People dancing/talking. Cake on table.",
+    imageDescription: "场景: 人们在跳舞/聊天。桌子上有蛋糕。",
     idealSamples: [
       { id: 1, text: "De mensen dansen en praten. Ze eten taart." },
       { id: 2, text: "Iedereen is vrolijk. Ze eten gebakjes." }
@@ -417,7 +417,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U bent op vakantie. Wat doet u liever? Vertel ook waarom.",
     questionChinese: "您在度假。您更喜欢做什么？说说为什么。",
-    imageDescription: "Image 1: Relaxing on beach. Image 2: Hiking in forest.",
+    imageDescription: "图片 1: 在沙滩上放松。 图片 2: 在森林里徒步。",
     idealSamples: [
       { id: 1, text: "Ik ga liever naar het strand, want ik lig graag in de zon." },
       { id: 2, text: "Ik ga liever wandelen, omdat ik van de natuur houd." }
@@ -428,7 +428,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "Welke sport vindt u leuker? Vertel ook waarom.",
     questionChinese: "您更喜欢哪种运动？说说为什么。",
-    imageDescription: "Image 1: Football. Image 2: Basketball.",
+    imageDescription: "图片 1: 足球。 图片 2: 篮球。",
     idealSamples: [
       { id: 1, text: "Ik vind voetbal leuker, want ik speel dat met mijn vrienden." },
       { id: 2, text: "Ik vind basketbal leuker. Ik vind voetbal een beetje saai." }
@@ -439,7 +439,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U wilt gaan werken. Waar werkt u liever? Vertel ook waarom.",
     questionChinese: "您想去工作。您更喜欢在哪里工作？说说为什么。",
-    imageDescription: "Image 1: Working in a busy restaurant. Image 2: Working quietly in an office.",
+    imageDescription: "图片 1: 在繁忙的餐厅工作。 图片 2: 在安静的办公室工作。",
     idealSamples: [
       { id: 1, text: "Ik werk liever in een restaurant, want ik houd van mensen om mij heen." },
       { id: 2, text: "Ik werk liever op een kantoor. Dat is rustiger." }
@@ -450,7 +450,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U gaat een avondje uit. Wat doet u liever? Vertel ook waarom.",
     questionChinese: "您晚上要出去玩。您更喜欢做什么？说说为什么。",
-    imageDescription: "Image 1: Cinema (Movie). Image 2: Dance club.",
+    imageDescription: "图片 1: 电影院。 图片 2: 舞厅/夜店。",
     idealSamples: [
       { id: 1, text: "Ik ga liever naar de bioscoop, want ik wil de nieuwe film zien." },
       { id: 2, text: "Ik ga liever dansen, want ik houd van muziek." }
@@ -461,7 +461,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U gaat boodschappen doen. Waar gaat u liever heen? Vertel ook waarom.",
     questionChinese: "您要去买菜。您更喜欢去哪里？说说为什么。",
-    imageDescription: "Image 1: Supermarket. Image 2: Outdoor Market.",
+    imageDescription: "图片 1: 超市。 图片 2: 露天市场。",
     idealSamples: [
       { id: 1, text: "Ik ga liever naar de supermarkt, want dat is dichterbij." },
       { id: 2, text: "Ik ga liever naar de markt, want daar is het fruit verser." }
@@ -472,7 +472,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U wilt ergens wonen. Waar woont u liever? Vertel ook waarom.",
     questionChinese: "您想找个地方住。您更喜欢住在哪里？说说为什么。",
-    imageDescription: "Image 1: Big city with flats. Image 2: Village with houses.",
+    imageDescription: "图片 1: 城市公寓。 图片 2: 乡村别墅。",
     idealSamples: [
       { id: 1, text: "Ik woon liever in de stad, want daar zijn veel winkels." },
       { id: 2, text: "Ik woon liever in een dorp, omdat het daar rustig is." }
@@ -483,7 +483,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U gaat eten. Wat doet u liever? Vertel ook waarom.",
     questionChinese: "您要吃饭。您更喜欢怎么做？说说为什么。",
-    imageDescription: "Image 1: Cooking at home. Image 2: Eating at a restaurant.",
+    imageDescription: "图片 1: 在家做饭。 图片 2: 去餐厅吃。",
     idealSamples: [
       { id: 1, text: "Ik kook liever thuis, want dat is goedkoper." },
       { id: 2, text: "Ik eet liever in een restaurant, want ik kan niet goed koken." }
@@ -494,7 +494,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U wilt een taal leren. Hoe doet u dat liever? Vertel ook waarom.",
     questionChinese: "您想学一门语言。您更喜欢怎么学？说说为什么。",
-    imageDescription: "Image 1: In a class with others. Image 2: Alone with a computer.",
+    imageDescription: "图片 1: 上大课。 图片 2: 独自用电脑学。",
     idealSamples: [
       { id: 1, text: "Ik leer liever in een klas, want dan kan ik praten met anderen." },
       { id: 2, text: "Ik leer liever alleen, want dan kan ik mij beter concentreren." }
@@ -505,7 +505,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U gaat op reis. Wat neemt u mee? Vertel ook waarom.",
     questionChinese: "您去旅行。您会带什么？说说为什么。",
-    imageDescription: "Image 1: Suitcase. Image 2: Backpack.",
+    imageDescription: "图片 1: 行李箱。 图片 2: 双肩背包。",
     idealSamples: [
       { id: 1, text: "Ik neem liever een koffer mee, want daar kan veel in." },
       { id: 2, text: "Ik neem liever een rugzak mee, want dat is makkelijker dragen." }
@@ -516,7 +516,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part3,
     questionDutch: "U wilt een huisdier. Wat kiest u? Vertel ook waarom.",
     questionChinese: "您想要个宠物。您选什么？说说为什么。",
-    imageDescription: "Image 1: Dog. Image 2: Cat.",
+    imageDescription: "图片 1: 狗。 图片 2: 猫。",
     idealSamples: [
       { id: 1, text: "Ik kies een hond, want ik houd van wandelen." },
       { id: 2, text: "Ik kies een kat, omdat een kat rustig is." }
@@ -531,7 +531,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Jessica gaat koken. Kijk naar de plaatjes. Vertel wat Jessica doet. Vertel iets over alle plaatjes.",
     questionChinese: "Jessica要去做饭。看图片，说说Jessica在做什么。请描述所有图片。",
-    imageDescription: "1. Washing peppers. 2. Cutting peppers. 3. Cooking peppers in pan.",
+    imageDescription: "1. 洗甜椒。 2. 切甜椒。 3. 在锅里炒甜椒。",
     idealSamples: [
       { id: 1, text: "Eerst wast Jessica de paprika. Daarna snijdt ze de paprika. Tot slot bakt ze de paprika in een pan." },
       { id: 2, text: "Jessica maakt de groente schoon, snijdt het in stukjes en kookt het eten." }
@@ -542,7 +542,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Jack gaat naar het zwembad. Kijk naar de plaatjes. Vertel wat Jack doet. Vertel iets over alle plaatjes.",
     questionChinese: "Jack去游泳池。看图片，说说Jack在做什么。",
-    imageDescription: "1. Putting on goggles. 2. Swimming. 3. Showering.",
+    imageDescription: "1. 戴上泳镜。 2. 游泳。 3. 淋浴。",
     idealSamples: [
       { id: 1, text: "Jack doet zijn zwembril op. Hij zwemt in het water. Daarna gaat hij douchen." },
       { id: 2, text: "Eerst pakt Jack zijn bril. Dan neemt hij een duik. Als laatste wast hij zich onder de douche." }
@@ -553,7 +553,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Sara is ziek. Vertel wat er gebeurt. Vertel iets over alle plaatjes.",
     questionChinese: "Sara病了。说说发生了什么。请描述所有图片。",
-    imageDescription: "1. Sara in bed with thermometer. 2. Sara calls doctor. 3. Sara takes medicine.",
+    imageDescription: "1. Sara卧病在床，量体温。 2. Sara给医生打电话。 3. Sara吃药。",
     idealSamples: [
       { id: 1, text: "Sara ligt in bed en heeft koorts. Ze belt de huisarts. Daarna neemt ze medicijnen in." },
       { id: 2, text: "Sara is ziek. Ze maakt een afspraak met de dokter. Ze drinkt een medicijn." }
@@ -564,7 +564,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Tom gaat met de trein. Vertel wat Tom doet. Vertel iets over alle plaatjes.",
     questionChinese: "Tom坐火车。说说Tom在做什么。请描述所有图片。",
-    imageDescription: "1. Buying ticket at machine. 2. Waiting on platform (perron). 3. Sitting in train.",
+    imageDescription: "1. 在机器上买票。 2. 在站台等待。 3. 坐在火车上。",
     idealSamples: [
       { id: 1, text: "Tom koopt een kaartje bij de automaat. Hij wacht op het perron. Hij zit in de trein." },
       { id: 2, text: "Eerst pakt hij een kaartje. Dan wacht hij op de trein. Tot slot reist hij met de trein." }
@@ -575,7 +575,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Lisa stuurt een brief. Vertel wat Lisa doet. Vertel iets over alle plaatjes.",
     questionChinese: "Lisa寄信。说说Lisa在做什么。请描述所有图片。",
-    imageDescription: "1. Writing letter. 2. Putting stamp on envelope. 3. Putting letter in mailbox.",
+    imageDescription: "1. 写信。 2. 贴邮票。 3. 投进信箱。",
     idealSamples: [
       { id: 1, text: "Lisa schrijft een brief. Ze plakt een postzegel op de envelop. Ze doet de brief in de brievenbus." },
       { id: 2, text: "Eerst schrijft ze. Dan doet ze de postzegel erop. Tot slot verstuurt ze de brief." }
@@ -586,7 +586,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "De fiets is kapot. Vertel wat er gebeurt. Vertel iets over alle plaatjes.",
     questionChinese: "自行车坏了。说说发生了什么。请描述所有图片。",
-    imageDescription: "1. Flat tire. 2. Pumping tire. 3. Riding bike happily.",
+    imageDescription: "1. 轮胎没气了。 2. 给轮胎打气。 3. 开心地骑走了。",
     idealSamples: [
       { id: 1, text: "De fiets heeft een lekke band. De man pompt de band op. Hij fietst weer weg." },
       { id: 2, text: "De band is leeg. Hij maakt de fiets. Daarna kan hij weer fietsen." }
@@ -597,7 +597,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Marie koopt nieuwe schoenen. Vertel wat ze doet. Vertel iets over alle plaatjes.",
     questionChinese: "Marie买新鞋。说说她在做什么。请描述所有图片。",
-    imageDescription: "1. Looking at shoes in window. 2. Trying on shoes. 3. Paying at register.",
+    imageDescription: "1. 看橱窗里的鞋子。 2. 试穿鞋子。 3. 结账。",
     idealSamples: [
       { id: 1, text: "Marie kijkt naar de schoenen. Ze past de schoenen. Ze betaalt aan de kassa." },
       { id: 2, text: "Ze ziet leuke schoenen. Ze doet ze aan. Ze koopt de schoenen." }
@@ -608,7 +608,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Het gaat regenen. Vertel wat er gebeurt. Vertel iets over alle plaatjes.",
     questionChinese: "要下雨了。说说发生了什么。请描述所有图片。",
-    imageDescription: "1. Dark clouds. 2. Opening umbrella. 3. Walking in rain.",
+    imageDescription: "1. 乌云密布。 2. 打开雨伞。 3. 在雨中行走。",
     idealSamples: [
       { id: 1, text: "Er zijn donkere wolken. De vrouw opent haar paraplu. Ze loopt in de regen." },
       { id: 2, text: "Het wordt slecht weer. Ze pakt een paraplu. Ze wordt niet nat." }
@@ -619,7 +619,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Jan maakt thee. Vertel wat Jan doet. Vertel iets over alle plaatjes.",
     questionChinese: "Jan泡茶。说说Jan在做什么。请描述所有图片。",
-    imageDescription: "1. Boiling water (kettle). 2. Putting teabag in cup. 3. Drinking tea.",
+    imageDescription: "1. 烧水。 2. 放茶包。 3. 喝茶。",
     idealSamples: [
       { id: 1, text: "Jan kookt water. Hij doet het theezakje in het kopje. Hij drinkt de thee." },
       { id: 2, text: "Eerst maakt hij het water heet. Dan maakt hij thee. Hij drinkt het lekker op." }
@@ -630,7 +630,7 @@ export const QUESTION_DATABASE: QuestionItem[] = [
     part: ExamPart.Part4,
     questionDutch: "Anna gaat slapen. Vertel wat Anna doet. Vertel iets over alle plaatjes.",
     questionChinese: "Anna去睡觉。说说Anna在做什么。请描述所有图片。",
-    imageDescription: "1. Brushing teeth. 2. Reading book in bed. 3. Sleeping / Lights out.",
+    imageDescription: "1. 刷牙。 2. 在床上看书。 3. 关灯睡觉。",
     idealSamples: [
       { id: 1, text: "Anna poetst haar tanden. Ze leest een boek in bed. Ze gaat slapen." },
       { id: 2, text: "Ze maakt haar tanden schoon. Ze leest nog even. Ze doet het licht uit." }

@@ -19,6 +19,7 @@ const getAiClient = () => {
 export const analyzeIdealAnswer = async (question: string, answer: string): Promise<AIAnalysis> => {
   const ai = getAiClient();
   
+  // Updated prompt to enforce Chinese output for explanations
   const prompt = `
     You are an expert Dutch tutor for Chinese A2 Inburgering students.
     Analyze this Question and Answer pair.
@@ -26,12 +27,14 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
     Answer: "${answer}"
 
     Provide analysis in structured JSON.
-    - grammar: List key grammar points used.
+    IMPORTANT: All explanations MUST be in simplified CHINESE (中文).
+    
+    - grammar: List key grammar points used (explain in Chinese).
     - vocabulary: List key words with their meanings in Chinese.
-    - tips: A helpful tip for remembering this.
-    - structure: The sentence structure used.
-    - realLifeContext: Where this sentence can be used.
-    - relatedTopics: Other topics related to this.
+    - tips: A helpful tip for remembering this (in Chinese).
+    - structure: The sentence structure used (explain in Chinese).
+    - realLifeContext: Where this sentence can be used (explain in Chinese).
+    - relatedTopics: Other topics related to this (in Chinese).
   `;
 
   const response = await ai.models.generateContent({
@@ -78,6 +81,7 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
 export const gradeUserAudio = async (question: string, audioBase64: string): Promise<AIGrade> => {
   const ai = getAiClient();
 
+  // Updated prompt to enforce Chinese feedback
   const prompt = `
     You are a Dutch Inburgering Exam (A2 level) examiner.
     The student is answering the question: "${question}".
@@ -85,10 +89,10 @@ export const gradeUserAudio = async (question: string, audioBase64: string): Pro
     
     Return a JSON object with:
     - score: number (1-10) based on A2 level expectations (understandability is key).
-    - transcription: what you heard.
-    - pronunciation: specific feedback on pronunciation errors.
-    - grammarCorrection: correct the sentence if grammar is wrong.
-    - feedback: general constructive feedback in English.
+    - transcription: what you heard (Dutch).
+    - pronunciation: specific feedback on pronunciation errors (Explain in CHINESE).
+    - grammarCorrection: correct the sentence if grammar is wrong (Explain in CHINESE).
+    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文).
   `;
 
   const response = await ai.models.generateContent({
