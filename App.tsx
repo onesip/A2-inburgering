@@ -1,14 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles, Dumbbell, Library, Grid, ArrowRight } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles, Dumbbell, Library, Grid, ArrowRight, History, BarChart3, Activity } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN, DRILL_SCENARIOS, TOPIC_CHEAT_SHEETS, GRAMMAR_CHEAT_SHEETS } from './constants';
-import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay, DrillType, DrillResult, TopicReference, GrammarRule } from './types';
+import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay, DrillType, DrillResult, TopicReference, GrammarRule, DailyRecord, StudyFocus, StudyEvent } from './types';
 import { analyzeIdealAnswer, gradeUserAudio, gradeDrillAudio } from './geminiService';
 
 // --- UTILS ---
 
-/**
- * Helper to force browser to use a Dutch voice.
- */
 const speakDutch = (text: string, rate: number = 0.9) => {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
@@ -21,6 +18,16 @@ const speakDutch = (text: string, rate: number = 0.9) => {
     utterance.voice = dutchVoice;
   }
   window.speechSynthesis.speak(utterance);
+};
+
+const getTodayString = () => new Date().toISOString().split('T')[0];
+
+const formatTime = (seconds: number) => {
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return `${hours}h ${remainingMins}m`;
 };
 
 // --- COMPONENTS ---
@@ -135,7 +142,6 @@ const SentenceSpeaker: React.FC<SentenceSpeakerProps> = ({
 };
 
 const StrategyCard = ({ part }: { part: ExamPart }) => {
-  // ... (No changes to StrategyCard logic)
   let content = {
     title: "",
     tips: [] as string[],
@@ -201,7 +207,12 @@ const StrategyCard = ({ part }: { part: ExamPart }) => {
   );
 };
 
-const SentenceGym = () => {
+interface SentenceGymProps {
+  onInteract: () => void;
+  onRecordStart: () => void;
+}
+
+const SentenceGym: React.FC<SentenceGymProps> = ({ onInteract, onRecordStart }) => {
   const [activeDrill, setActiveDrill] = useState<DrillType>(DrillType.Completion);
   const [prompt, setPrompt] = useState(DRILL_SCENARIOS[DrillType.Completion][0]);
   const [isRecording, setIsRecording] = useState(false);
@@ -215,6 +226,7 @@ const SentenceGym = () => {
     const random = list[Math.floor(Math.random() * list.length)];
     setPrompt(random);
     setResult(null);
+    onInteract(); // Track interaction
   };
 
   const handleTabChange = (type: DrillType) => {
@@ -223,6 +235,7 @@ const SentenceGym = () => {
   };
 
   const startRecording = async () => {
+    onRecordStart(); // Notify App to switch focus/log event
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -273,7 +286,7 @@ const SentenceGym = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-6 shadow-sm mt-6 relative overflow-hidden">
+    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-6 shadow-sm mt-6 relative overflow-hidden" onClick={onInteract}>
        <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none">
           <Dumbbell size={150} />
        </div>
@@ -335,8 +348,8 @@ const SentenceGym = () => {
                     : 'bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105'
                   }
                 `}
-             >
-                {isRecording ? <Square size={24} fill="currentColor" /> : <Mic size={24} />}
+              >
+                 {isRecording ? <Square size={24} fill="currentColor" /> : <Mic size={24} />}
              </button>
           </div>
           
@@ -477,13 +490,18 @@ const StudyPlanCard = ({
   );
 };
 
-// --- NEW LIBRARY COMPONENT ---
+// --- LIBRARY COMPONENT ---
 
-const LibraryView = () => {
+const LibraryView = ({ onInteract }: { onInteract: () => void }) => {
   const [activeTab, setActiveTab] = useState<'topics' | 'grammar' | 'drills'>('topics');
 
+  const handleTabSwitch = (tab: 'topics' | 'grammar' | 'drills') => {
+    setActiveTab(tab);
+    onInteract(); // Track interaction for "Library" focus
+  };
+
   return (
-    <div className="space-y-6 animate-in slide-in-from-right-4">
+    <div className="space-y-6 animate-in slide-in-from-right-4" onClick={onInteract}>
       {/* Tab Switcher */}
       <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
         {[
@@ -493,7 +511,7 @@ const LibraryView = () => {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
+            onClick={() => handleTabSwitch(tab.id as any)}
             className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${
               activeTab === tab.id
                 ? 'bg-blue-100 text-blue-700 shadow-sm'
@@ -624,10 +642,103 @@ const LibraryView = () => {
   );
 };
 
+// --- HISTORY VIEW ---
+
+const HistoryView = ({ history }: { history: DailyRecord[] }) => {
+  const todayStr = getTodayString();
+  const todayRecord = history.find(r => r.date === todayStr);
+
+  const stats = todayRecord?.stats || { exercise: 0, random: 0, drill: 0, library: 0 };
+  const totalSeconds = todayRecord?.totalSeconds || 0;
+
+  const categories = [
+    { key: 'exercise', label: '真题实战', color: 'bg-blue-500', icon: Trophy, desc: 'What was done' },
+    { key: 'random', label: '随机练习', color: 'bg-teal-500', icon: Shuffle, desc: 'Random practice' },
+    { key: 'drill', label: '句型特训', color: 'bg-emerald-500', icon: Dumbbell, desc: 'Proactive practice' },
+    { key: 'library', label: '资料整理', color: 'bg-indigo-500', icon: BookOpen, desc: 'Data consolidation' },
+  ];
+
+  return (
+    <div className="space-y-6 animate-in slide-in-from-right-4">
+      
+      {/* TODAY SUMMARY */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+         <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-orange-100 text-orange-600 rounded-full">
+               <History size={24} />
+            </div>
+            <div>
+               <h2 className="text-xl font-bold text-slate-800">今日学习档案</h2>
+               <p className="text-sm text-slate-500">积跬步，至千里。</p>
+            </div>
+            <div className="ml-auto text-right">
+               <div className="text-2xl font-bold text-slate-900">{Math.floor(totalSeconds / 60)}<span className="text-sm font-normal text-slate-500"> min</span></div>
+               <div className="text-xs font-bold text-slate-400 uppercase">Total Time</div>
+            </div>
+         </div>
+
+         {/* BREAKDOWN GRID */}
+         <div className="grid grid-cols-2 gap-4">
+            {categories.map((cat) => {
+               const seconds = stats[cat.key as StudyFocus] || 0;
+               return (
+                  <div key={cat.key} className="bg-slate-50 rounded-lg p-4 border border-slate-100 flex flex-col items-center text-center">
+                     <div className={`p-2 rounded-full text-white mb-2 ${cat.color}`}>
+                        <cat.icon size={16} />
+                     </div>
+                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tight mb-1">{cat.label}</span>
+                     <span className="text-lg font-bold text-slate-800">{formatTime(seconds)}</span>
+                     <span className="text-[10px] text-slate-400 mt-1">{cat.desc}</span>
+                  </div>
+               );
+            })}
+         </div>
+      </div>
+
+      {/* TIMELINE */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+         <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <Activity size={18} className="text-slate-400" />
+            今日轨迹 (Timeline)
+         </h3>
+         
+         {!todayRecord || todayRecord.events.length === 0 ? (
+            <div className="text-center py-8 text-slate-400 italic text-sm">
+               今天还没有学习记录，快去开始吧！
+            </div>
+         ) : (
+            <div className="space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+               {[...todayRecord.events].reverse().map((event) => (
+                  <div key={event.id} className="relative pl-8 animate-in slide-in-from-left-2">
+                     <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full border-2 border-white shadow-sm z-10 
+                        ${event.focus === 'exercise' ? 'bg-blue-500' : 
+                          event.focus === 'random' ? 'bg-teal-500' :
+                          event.focus === 'drill' ? 'bg-emerald-500' : 'bg-indigo-500'
+                        }`} 
+                     />
+                     <div className="flex justify-between items-start">
+                        <div>
+                           <p className="text-sm font-medium text-slate-800">{event.description}</p>
+                           <p className="text-xs text-slate-400 mt-0.5 capitalize">{event.focus.replace('drill', 'Proactive').replace('library', 'Consolidation')}</p>
+                        </div>
+                        <span className="text-xs font-mono text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
+                           {event.timeString}
+                        </span>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         )}
+      </div>
+
+    </div>
+  );
+};
+
 // --- MAIN APP ---
 
 const App: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'practice' | 'library'>('practice');
+  const [viewMode, setViewMode] = useState<'practice' | 'library' | 'history'>('practice');
   const [activePart, setActivePart] = useState<ExamPart>(ExamPart.Part1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -644,18 +755,29 @@ const App: React.FC = () => {
   const [currentPlanDay, setCurrentPlanDay] = useState<number>(1);
   const [dailyProgress, setDailyProgress] = useState<{ [key: number]: number[] }>({});
 
+  // --- HISTORY TRACKING STATE ---
+  const [history, setHistory] = useState<DailyRecord[]>([]);
+  const [currentFocus, setCurrentFocus] = useState<StudyFocus>('exercise'); // Default focus
+  const [isRandomMode, setIsRandomMode] = useState(false);
+  const lastInteraction = useRef<number>(Date.now());
+
   const EXAM_DATE = new Date('2024-12-30'); 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  // Init & Load
   useEffect(() => {
     const loadVoices = () => { window.speechSynthesis.getVoices(); };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => { window.speechSynthesis.onvoiceschanged = null; };
-  }, []);
+    
+    // Load History
+    const storedHistory = localStorage.getItem('a2_study_history');
+    if (storedHistory) {
+      try { setHistory(JSON.parse(storedHistory)); } catch (e) { console.error(e); }
+    }
 
-  useEffect(() => {
+    // Load Plan
     const storedStart = localStorage.getItem('studyPlanStartDate');
     const today = new Date();
     if (storedStart) {
@@ -675,13 +797,109 @@ const App: React.FC = () => {
     if (storedProgress) {
       try { setDailyProgress(JSON.parse(storedProgress)); } catch (e) { console.error(e); }
     }
+
+    // Check API Key
+    const apiKey = (import.meta as any).env?.VITE_API_KEY;
+    if (!apiKey) { setApiKeyMissing(true); }
   }, []);
 
+  // Persist Progress
   useEffect(() => {
     if (Object.keys(dailyProgress).length > 0) {
       localStorage.setItem('studyPlanProgress', JSON.stringify(dailyProgress));
     }
   }, [dailyProgress]);
+
+  // Persist History
+  useEffect(() => {
+    if (history.length > 0) {
+      localStorage.setItem('a2_study_history', JSON.stringify(history));
+    }
+  }, [history]);
+
+  // --- STUDY TRACKER LOGIC ---
+
+  // Helper to log a discreet event
+  const logEvent = useCallback((description: string, focusOverride?: StudyFocus) => {
+    const focus = focusOverride || currentFocus;
+    // Update last interaction
+    lastInteraction.current = Date.now();
+    
+    // Create Event
+    const newEvent: StudyEvent = {
+      id: Date.now().toString() + Math.random(),
+      timestamp: Date.now(),
+      timeString: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      focus,
+      description
+    };
+
+    setHistory(prev => {
+      const todayStr = getTodayString();
+      const existingTodayIndex = prev.findIndex(r => r.date === todayStr);
+      
+      let newHistory = [...prev];
+      if (existingTodayIndex >= 0) {
+        newHistory[existingTodayIndex] = {
+          ...newHistory[existingTodayIndex],
+          events: [...newHistory[existingTodayIndex].events, newEvent]
+        };
+      } else {
+        newHistory.push({
+          date: todayStr,
+          totalSeconds: 0,
+          stats: { exercise: 0, random: 0, drill: 0, library: 0 },
+          events: [newEvent]
+        });
+      }
+      return newHistory;
+    });
+  }, [currentFocus]);
+
+  // Helper to update interaction time without logging event (e.g. scroll/click)
+  const trackInteraction = (focusOverride?: StudyFocus) => {
+    lastInteraction.current = Date.now();
+    if (focusOverride) setCurrentFocus(focusOverride);
+  };
+
+  // Timer Effect (runs every 10s)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = Date.now();
+      // Only count if last interaction was within 2 minutes AND tab is visible
+      if (now - lastInteraction.current < 120000 && document.visibilityState === 'visible') {
+         setHistory(prev => {
+           const todayStr = getTodayString();
+           const existingTodayIndex = prev.findIndex(r => r.date === todayStr);
+           const intervalSeconds = 10;
+           
+           let newHistory = [...prev];
+           if (existingTodayIndex >= 0) {
+             const rec = newHistory[existingTodayIndex];
+             newHistory[existingTodayIndex] = {
+               ...rec,
+               totalSeconds: rec.totalSeconds + intervalSeconds,
+               stats: {
+                 ...rec.stats,
+                 [currentFocus]: (rec.stats[currentFocus] || 0) + intervalSeconds
+               }
+             };
+           } else {
+             newHistory.push({
+                date: todayStr,
+                totalSeconds: intervalSeconds,
+                stats: { exercise: 0, random: 0, drill: 0, library: 0, [currentFocus]: intervalSeconds },
+                events: []
+             });
+           }
+           return newHistory;
+         });
+      }
+    }, 10000); // 10 seconds tick
+    return () => clearInterval(timer);
+  }, [currentFocus]);
+
+  // --- HANDLERS ---
 
   const handleTaskToggle = (taskIndex: number) => {
     setDailyProgress(prev => {
@@ -689,7 +907,10 @@ const App: React.FC = () => {
       const isCompleted = currentDayTasks.includes(taskIndex);
       let newTasks;
       if (isCompleted) { newTasks = currentDayTasks.filter(id => id !== taskIndex); } 
-      else { newTasks = [...currentDayTasks, taskIndex]; }
+      else { 
+        newTasks = [...currentDayTasks, taskIndex]; 
+        logEvent(`Completed Plan Task #${taskIndex + 1}`, 'exercise');
+      }
       return { ...prev, [currentPlanDay]: newTasks };
     });
   };
@@ -703,18 +924,28 @@ const App: React.FC = () => {
     setIsDrillMode(false); 
   }, [currentQuestionIndex, activePart]);
 
-  useEffect(() => {
-    const apiKey = (import.meta as any).env?.VITE_API_KEY;
-    if (!apiKey) { setApiKeyMissing(true); }
-  }, []);
+  const handleNext = () => { 
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      trackInteraction(isRandomMode ? 'random' : 'exercise');
+    }
+  };
+  
+  const handlePrev = () => { 
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+      trackInteraction(isRandomMode ? 'random' : 'exercise');
+    }
+  };
 
-  const handleNext = () => { if (currentQuestionIndex < questions.length - 1) setCurrentQuestionIndex(prev => prev + 1); };
-  const handlePrev = () => { if (currentQuestionIndex > 0) setCurrentQuestionIndex(prev => prev - 1); };
   const handleRandom = () => {
     if (questions.length <= 1) return;
     let newIndex;
     do { newIndex = Math.floor(Math.random() * questions.length); } while (newIndex === currentQuestionIndex);
     setCurrentQuestionIndex(newIndex);
+    setIsRandomMode(true);
+    setCurrentFocus('random');
+    logEvent(`Started Random Practice`, 'random');
   };
 
   const handlePlanPractice = (parts: ExamPart[]) => {
@@ -722,6 +953,9 @@ const App: React.FC = () => {
     if (parts.length > 0) {
       setActivePart(parts[0]);
       setCurrentQuestionIndex(0);
+      setIsRandomMode(false);
+      setCurrentFocus('exercise');
+      logEvent(`Started Daily Plan: ${parts[0]}`, 'exercise');
       window.scrollTo({ top: 500, behavior: 'smooth' }); 
     }
   };
@@ -729,11 +963,14 @@ const App: React.FC = () => {
   const playQuestionAudio = () => {
     if (!currentQuestion) return;
     speakDutch(currentQuestion.questionDutch, playbackSpeed);
+    trackInteraction('exercise');
   };
 
   const handleAnalyze = async () => {
     if (!currentQuestion) return;
     setIsAnalyzing(true);
+    trackInteraction('exercise');
+    logEvent(`Requested AI Analysis for ${currentQuestion.id}`, 'exercise');
     try {
       const result = await analyzeIdealAnswer(currentQuestion.questionDutch, currentQuestion.idealSamples[0].text);
       setAnalysis(result);
@@ -748,6 +985,10 @@ const App: React.FC = () => {
   const startRecording = async (isDrill: boolean = false) => {
     setGrade(null);
     setIsDrillMode(isDrill); 
+    const focusType = isDrill ? 'drill' : (isRandomMode ? 'random' : 'exercise');
+    setCurrentFocus(focusType);
+    logEvent(isDrill ? "Started Drill Recording" : "Started Exam Answer Recording", focusType);
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -784,6 +1025,7 @@ const App: React.FC = () => {
     try {
       const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64, activePart, keywords);
       setGrade(result);
+      logEvent(`Received Grade: ${result.score}/10`);
     } catch (error) {
       console.error(error);
       alert("评分失败，请重试。");
@@ -825,33 +1067,49 @@ const App: React.FC = () => {
       <div className="max-w-3xl mx-auto p-4 pb-0">
         <div className="bg-white p-1 rounded-xl shadow-sm border border-slate-200 flex">
           <button 
-            onClick={() => setViewMode('practice')}
+            onClick={() => { setViewMode('practice'); trackInteraction(); }}
             className={`flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${
               viewMode === 'practice' 
                 ? 'bg-orange-50 text-orange-700 shadow-sm' 
                 : 'text-slate-500 hover:bg-slate-50'
             }`}
           >
-            <Mic size={18} /> 主动练习 (Practice)
+            <Mic size={18} /> 主动练习
           </button>
           <button 
-             onClick={() => setViewMode('library')}
+             onClick={() => { setViewMode('library'); trackInteraction('library'); }}
              className={`flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${
               viewMode === 'library' 
                 ? 'bg-blue-50 text-blue-700 shadow-sm' 
                 : 'text-slate-500 hover:bg-slate-50'
             }`}
           >
-            <Library size={18} /> 资料库 (Cheat Sheet)
+            <Library size={18} /> 资料库
+          </button>
+          <button 
+             onClick={() => { setViewMode('history'); trackInteraction(); }}
+             className={`flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              viewMode === 'history' 
+                ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
+                : 'text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <History size={18} /> 学习档案
           </button>
         </div>
       </div>
 
       <main className="max-w-3xl mx-auto p-4 flex flex-col gap-6">
         
-        {viewMode === 'library' ? (
-          <LibraryView />
-        ) : (
+        {viewMode === 'history' && (
+          <HistoryView history={history} />
+        )}
+
+        {viewMode === 'library' && (
+          <LibraryView onInteract={() => trackInteraction('library')} />
+        )}
+        
+        {viewMode === 'practice' && (
           <>
             <StudyPlanCard 
               currentDay={currentPlanDay}
@@ -866,7 +1124,13 @@ const App: React.FC = () => {
               {Object.values(ExamPart).map((part) => (
                 <button
                   key={part}
-                  onClick={() => { setActivePart(part); setCurrentQuestionIndex(0); }}
+                  onClick={() => { 
+                    setActivePart(part); 
+                    setCurrentQuestionIndex(0); 
+                    setIsRandomMode(false); 
+                    setCurrentFocus('exercise');
+                    logEvent(`Switched to ${part}`, 'exercise');
+                  }}
                   className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all ${
                     activePart === part 
                       ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-200' 
@@ -887,7 +1151,7 @@ const App: React.FC = () => {
                 {[0.5, 0.75, 1.0, 1.25].map((speed) => (
                   <button
                     key={speed}
-                    onClick={() => setPlaybackSpeed(speed)}
+                    onClick={() => { setPlaybackSpeed(speed); trackInteraction(); }}
                     className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${
                       playbackSpeed === speed
                         ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200'
@@ -905,7 +1169,10 @@ const App: React.FC = () => {
             ) : (
               <>
                 <StrategyCard part={activePart} />
-                <SentenceGym />
+                <SentenceGym 
+                  onInteract={() => trackInteraction('drill')} 
+                  onRecordStart={() => setCurrentFocus('drill')}
+                />
 
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-center text-slate-500 text-sm font-medium">
@@ -932,7 +1199,7 @@ const App: React.FC = () => {
                     onClick={handleRandom}
                     className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white py-2 rounded-lg shadow hover:from-teal-600 hover:to-teal-700 transition-all font-semibold text-sm"
                   >
-                    <Shuffle size={16} /> 随机练习 (培养语感)
+                    <Shuffle size={16} /> 随机练习 (Random Practice)
                   </button>
                 </div>
 

@@ -86,3 +86,21 @@ export interface GrammarRule {
   description: string;
   examples: Array<{ wrong?: string; right: string; note: string }>;
 }
+
+// --- NEW TYPES FOR HISTORY TRACKING ---
+export type StudyFocus = 'exercise' | 'random' | 'drill' | 'library';
+
+export interface StudyEvent {
+  id: string;
+  timestamp: number;
+  timeString: string; // HH:MM
+  focus: StudyFocus;
+  description: string;
+}
+
+export interface DailyRecord {
+  date: string; // YYYY-MM-DD
+  totalSeconds: number;
+  stats: Record<StudyFocus, number>; // Seconds per category
+  events: StudyEvent[];
+}
