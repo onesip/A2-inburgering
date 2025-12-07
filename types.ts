@@ -69,3 +69,20 @@ export interface StudyPlanDay {
   tasks: string[];
   recommendedParts: ExamPart[];
 }
+
+// --- NEW TYPES FOR KNOWLEDGE BASE ---
+export interface TopicReference {
+  id: string;
+  title: string;
+  icon: string; // Emoji
+  keywords: Array<{ word: string; mean: string; type: 'verb' | 'noun' | 'adj' }>;
+  sentences: Array<{ nl: string; cn: string }>;
+}
+
+export interface GrammarRule {
+  id: string;
+  title: string;
+  formula: string[];
+  description: string;
+  examples: Array<{ wrong?: string; right: string; note: string }>;
+}
