@@ -1,3 +1,4 @@
+
 export enum ExamPart {
   Part1 = 'Part 1: Interview',
   Part2 = 'Part 2: Description',
@@ -25,7 +26,9 @@ export interface AIAnalysis {
   grammar: string[];
   vocabulary: Array<{ word: string; meaning: string }>;
   tips: string;
-  structure: string;
+  structure: string; // Text description of structure
+  syntaxFormula: string[]; // New: Visual formula e.g. ["Subject", "Verb", "Time"]
+  keyWords: string[]; // New: Extracted keywords/verbs for practice
   realLifeContext: string; // New: Where can this be seen/used?
   relatedTopics: string[]; // New: Predicted related exam topics
 }

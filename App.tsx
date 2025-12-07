@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge } from 'lucide-react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
@@ -155,6 +155,7 @@ const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
+  const [isDrillMode, setIsDrillMode] = useState(false); // New: Track if user is in "Drill" mode
   
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [grade, setGrade] = useState<AIGrade | null>(null);
@@ -210,6 +211,7 @@ const App: React.FC = () => {
   useEffect(() => {
     setAnalysis(null);
     setGrade(null);
+    setIsDrillMode(false); // Reset drill mode
   }, [currentQuestionIndex, activePart]);
 
   // Check for API Key (Updated for Vite)
@@ -272,8 +274,9 @@ const App: React.FC = () => {
     }
   };
 
-  const startRecording = async () => {
+  const startRecording = async (isDrill: boolean = false) => {
     setGrade(null);
+    setIsDrillMode(isDrill); // Set whether this is a drill or normal exam
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -312,8 +315,12 @@ const App: React.FC = () => {
   const handleGrade = async (audioBase64: string) => {
     if (!currentQuestion) return;
     setIsGrading(true);
+    
+    // If in drill mode and analysis exists, pass keywords for specific checking
+    const keywords = (isDrillMode && analysis?.keyWords) ? analysis.keyWords : undefined;
+
     try {
-      const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64);
+      const result = await gradeUserAudio(currentQuestion.questionDutch, audioBase64, keywords);
       setGrade(result);
     } catch (error) {
       console.error(error);
@@ -517,12 +524,23 @@ const App: React.FC = () => {
                   </h4>
                   
                   <div className="space-y-6">
-                    {/* Structure */}
-                    <div>
-                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-1">句式结构</span>
-                      <div className="bg-white p-3 rounded-lg border border-indigo-100 text-indigo-900 shadow-sm">
-                        {analysis.structure}
-                      </div>
+                    {/* Structure Formula Visualizer */}
+                    <div className="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm">
+                      <span className="font-bold text-xs text-indigo-400 uppercase tracking-wider block mb-2">语序公式 (The Formula)</span>
+                      {analysis.syntaxFormula && analysis.syntaxFormula.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 items-center">
+                          {analysis.syntaxFormula.map((block, i) => (
+                            <React.Fragment key={i}>
+                               <div className="bg-indigo-600 text-white px-3 py-1.5 rounded-md font-bold text-sm shadow">
+                                 {block}
+                               </div>
+                               {i < analysis.syntaxFormula.length - 1 && <Plus size={16} className="text-indigo-300" />}
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-slate-500 text-sm italic">{analysis.structure}</div>
+                      )}
                     </div>
 
                     {/* Vocabulary */}
@@ -558,29 +576,53 @@ const App: React.FC = () => {
                        </div>
                     </div>
 
-                    {/* Related Topics */}
-                    <div className="bg-white/50 p-3 rounded-lg border border-indigo-100">
-                      <span className="font-bold text-xs text-indigo-500 uppercase tracking-wider block mb-2 flex items-center gap-1">
-                        <List size={12} /> 相关考点
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {analysis.relatedTopics.map((topic, i) => (
-                           <span key={i} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-medium">
-                             {topic}
-                           </span>
-                        ))}
-                      </div>
-                    </div>
-
                     <div className="text-xs text-right text-indigo-400 italic">
                        * 记忆小贴士: {analysis.tips}
                     </div>
+
+                    {/* GRAMMAR DRILL BUTTON */}
+                    {analysis.keyWords && analysis.keyWords.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-indigo-200">
+                         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                            <h5 className="font-bold text-yellow-800 flex items-center gap-2 mb-2">
+                               <Hammer size={18} /> 语法造句特训 (Grammar Drill)
+                            </h5>
+                            <p className="text-sm text-yellow-700 mb-3">
+                               请尝试使用以下词汇造句，AI 将专门检查你的<b>语序</b>是否正确：
+                            </p>
+                            <div className="flex gap-2 flex-wrap mb-4">
+                               {analysis.keyWords.map((kw, i) => (
+                                  <div key={i} className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-yellow-300 text-yellow-900 font-medium text-sm">
+                                     {kw}
+                                     <Volume2 
+                                        size={12} 
+                                        className="text-yellow-500 cursor-pointer hover:text-yellow-700"
+                                        onClick={() => speakDutch(kw, 0.8)}
+                                     />
+                                  </div>
+                               ))}
+                            </div>
+                            
+                            <button
+                              onClick={() => isRecording ? stopRecording() : startRecording(true)}
+                              className={`w-full py-2 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
+                                isRecording && isDrillMode
+                                  ? 'bg-red-500 text-white animate-pulse'
+                                  : 'bg-yellow-400 text-yellow-900 hover:bg-yellow-300'
+                              }`}
+                            >
+                               {isRecording && isDrillMode ? <Square size={16} /> : <Mic size={16} />}
+                               {isRecording && isDrillMode ? "录音中... 点击停止" : "开始造句挑战"}
+                            </button>
+                         </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Practice Section */}
+            {/* Practice Section (Standard Exam Mode) */}
             <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 to-pink-500"></div>
               <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2 text-lg">
@@ -589,24 +631,24 @@ const App: React.FC = () => {
               
               <div className="flex flex-col items-center gap-6">
                  <button
-                   onClick={isRecording ? stopRecording : startRecording}
+                   onClick={() => isRecording ? stopRecording() : startRecording(false)}
                    className={`
                      relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 group
-                     ${isRecording 
+                     ${isRecording && !isDrillMode
                         ? 'bg-red-50 text-red-600 border-4 border-red-500 scale-110 shadow-[0_0_20px_rgba(239,68,68,0.4)]' 
                         : 'bg-gradient-to-br from-red-500 to-pink-600 text-white hover:shadow-xl hover:scale-105'
                      }
                    `}
                  >
-                   {isRecording ? <Square size={36} fill="currentColor" /> : <Mic size={36} />}
-                   {isRecording && (
+                   {isRecording && !isDrillMode ? <Square size={36} fill="currentColor" /> : <Mic size={36} />}
+                   {isRecording && !isDrillMode && (
                      <span className="absolute -bottom-10 text-xs font-bold text-red-500 animate-pulse bg-red-100 px-2 py-1 rounded">录音中...</span>
                    )}
                  </button>
                  <p className="text-sm text-slate-500 text-center max-w-sm">
-                   {isRecording 
+                   {isRecording && !isDrillMode
                      ? "请清晰朗读。完成后点击停止。" 
-                     : "点击麦克风开始练习，AI 即时打分。"}
+                     : "点击麦克风开始模拟回答，获取综合打分。"}
                  </p>
               </div>
 
@@ -614,14 +656,17 @@ const App: React.FC = () => {
               {isGrading && (
                 <div className="mt-8 text-center text-slate-500 flex flex-col items-center gap-3 animate-pulse">
                   <RefreshCw className="animate-spin text-blue-500" size={24} />
-                  <span className="font-medium">正在评分中...</span>
+                  <span className="font-medium">{isDrillMode ? "正在检查语序..." : "正在评分中..."}</span>
                 </div>
               )}
 
               {grade && !isGrading && (
                 <div className="mt-8 border-t border-slate-100 pt-6 animate-in zoom-in-95 duration-300">
                   <div className="flex items-center justify-between mb-6">
-                    <h4 className="font-bold text-slate-800 text-lg">成绩单</h4>
+                    <h4 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      {isDrillMode ? <Hammer size={20} className="text-yellow-600"/> : <Trophy size={20} className="text-yellow-600"/>}
+                      {isDrillMode ? "特训反馈" : "成绩单"}
+                    </h4>
                     <div className={`px-5 py-2 rounded-xl font-bold text-2xl shadow-sm ${
                       grade.score >= 8 ? 'bg-green-100 text-green-700 border border-green-200' :
                       grade.score >= 6 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :

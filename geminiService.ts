@@ -19,7 +19,7 @@ const getAiClient = () => {
 export const analyzeIdealAnswer = async (question: string, answer: string): Promise<AIAnalysis> => {
   const ai = getAiClient();
   
-  // Updated prompt to enforce Chinese output for explanations
+  // Updated prompt to enforce Chinese output for explanations and generate Syntax Formula
   const prompt = `
     You are an expert Dutch tutor for Chinese A2 Inburgering students.
     Analyze this Question and Answer pair.
@@ -32,7 +32,9 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
     - grammar: List key grammar points used (explain in Chinese).
     - vocabulary: List key words with their meanings in Chinese.
     - tips: A helpful tip for remembering this (in Chinese).
-    - structure: The sentence structure used (explain in Chinese).
+    - structure: A text explanation of the sentence structure (in Chinese).
+    - syntaxFormula: An array of strings representing the word order "formula" (e.g. ["主语 (Ik)", "动词 (ben)", "其余 (blij)"]). Use Chinese labels.
+    - keyWords: Extract the 2-3 most important Dutch words (especially the VERB) from the answer for the student to practice.
     - realLifeContext: Where this sentence can be used (explain in Chinese).
     - relatedTopics: Other topics related to this (in Chinese).
   `;
@@ -61,6 +63,16 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
           },
           tips: { type: Type.STRING },
           structure: { type: Type.STRING },
+          syntaxFormula: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "Visual blocks for sentence structure, e.g. ['Subject', 'Verb', 'Object']"
+          },
+          keyWords: {
+             type: Type.ARRAY,
+             items: { type: Type.STRING },
+             description: "Key Dutch words/verbs from the sentence"
+          },
           realLifeContext: { type: Type.STRING },
           relatedTopics: {
             type: Type.ARRAY,
@@ -78,21 +90,29 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
 };
 
 // 2. EXAM MODE: Grade the user's audio
-export const gradeUserAudio = async (question: string, audioBase64: string): Promise<AIGrade> => {
+export const gradeUserAudio = async (question: string, audioBase64: string, keyWordsContext?: string[]): Promise<AIGrade> => {
   const ai = getAiClient();
+
+  // If keywords are provided, this is a Grammar Drill. Adjust the persona.
+  const isDrill = keyWordsContext && keyWordsContext.length > 0;
+
+  const drillContext = isDrill 
+    ? `IMPORTANT: This is a GRAMMAR DRILL. The student MUST use these words: ${keyWordsContext.join(', ')}. Focus heavily on Word Order (Syntax).` 
+    : "";
 
   // Updated prompt to enforce Chinese feedback
   const prompt = `
     You are a Dutch Inburgering Exam (A2 level) examiner.
     The student is answering the question: "${question}".
+    ${drillContext}
     Evaluate the audio response.
     
     Return a JSON object with:
     - score: number (1-10) based on A2 level expectations (understandability is key).
     - transcription: what you heard (Dutch).
     - pronunciation: specific feedback on pronunciation errors (Explain in CHINESE).
-    - grammarCorrection: correct the sentence if grammar is wrong (Explain in CHINESE).
-    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文).
+    - grammarCorrection: correct the sentence if grammar/word order is wrong (Explain in CHINESE).
+    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). If this is a drill, confirm if they used the required words and correct word order.
   `;
 
   const response = await ai.models.generateContent({
