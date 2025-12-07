@@ -9,6 +9,7 @@ export enum ExamPart {
 export interface IdealSample {
   id: number;
   text: string;
+  translation: string; // New: Full sentence translation
   explanation?: string; // Optional pre-calculated explanation
 }
 
@@ -22,15 +23,21 @@ export interface QuestionItem {
   idealSamples: IdealSample[];
 }
 
+export interface WordAlignment {
+  dutch: string;
+  chinese: string;
+}
+
 export interface AIAnalysis {
   grammar: string[];
   vocabulary: Array<{ word: string; meaning: string }>;
   tips: string;
   structure: string; // Text description of structure
-  syntaxFormula: string[]; // New: Visual formula e.g. ["Subject", "Verb", "Time"]
-  keyWords: string[]; // New: Extracted keywords/verbs for practice
-  realLifeContext: string; // New: Where can this be seen/used?
-  relatedTopics: string[]; // New: Predicted related exam topics
+  syntaxFormula: string[]; // Visual formula e.g. ["Subject", "Verb", "Time"]
+  keyWords: string[]; // Extracted keywords/verbs for practice
+  wordAlignment: WordAlignment[]; // New: Word-by-word translation alignment
+  realLifeContext: string; // Where can this be seen/used?
+  relatedTopics: string[]; // Predicted related exam topics
 }
 
 export interface AIGrade {

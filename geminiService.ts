@@ -19,7 +19,7 @@ const getAiClient = () => {
 export const analyzeIdealAnswer = async (question: string, answer: string): Promise<AIAnalysis> => {
   const ai = getAiClient();
   
-  // Updated prompt to enforce Chinese output for explanations and generate Syntax Formula
+  // Updated prompt to request wordAlignment for interlinear gloss
   const prompt = `
     You are an expert Dutch tutor for Chinese A2 Inburgering students.
     Analyze this Question and Answer pair.
@@ -35,6 +35,7 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
     - structure: A text explanation of the sentence structure (in Chinese).
     - syntaxFormula: An array of strings representing the word order "formula" (e.g. ["主语 (Ik)", "动词 (ben)", "其余 (blij)"]). Use Chinese labels.
     - keyWords: Extract the 2-3 most important Dutch words (especially the VERB) from the answer for the student to practice.
+    - wordAlignment: Break down the Answer sentence word-by-word (or logical phrases) and provide the direct Chinese meaning for each part. Example: [{"dutch": "Ik", "chinese": "我"}, {"dutch": "ben", "chinese": "是"}].
     - realLifeContext: Where this sentence can be used (explain in Chinese).
     - relatedTopics: Other topics related to this (in Chinese).
   `;
@@ -72,6 +73,17 @@ export const analyzeIdealAnswer = async (question: string, answer: string): Prom
              type: Type.ARRAY,
              items: { type: Type.STRING },
              description: "Key Dutch words/verbs from the sentence"
+          },
+          wordAlignment: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                dutch: { type: Type.STRING },
+                chinese: { type: Type.STRING }
+              }
+            },
+            description: "Word-by-word alignment for gloss view"
           },
           realLifeContext: { type: Type.STRING },
           relatedTopics: {

@@ -46,24 +46,57 @@ const Spinner = () => (
   </svg>
 );
 
-const WordSpeaker = ({ text, speed }: { text: string; speed: number }) => {
+interface WordSpeakerProps {
+  text: string;
+  speed: number;
+  chinese?: string;
+  highlighted?: boolean;
+}
+
+const WordSpeaker: React.FC<WordSpeakerProps> = ({ text, speed, chinese, highlighted }) => {
   const speak = (e: React.MouseEvent) => {
     e.stopPropagation();
     speakDutch(text, speed);
   };
 
   return (
-    <span 
+    <div 
       onClick={speak} 
-      className="cursor-pointer hover:text-orange-600 hover:bg-orange-100 rounded px-0.5 transition-colors border-b border-dotted border-slate-400"
+      className={`
+        flex flex-col items-center cursor-pointer rounded px-1 transition-all
+        ${highlighted ? 'bg-orange-100 scale-105' : 'hover:bg-slate-100'}
+      `}
       title="点击发音"
     >
-      {text}
-    </span>
+      <span className={`text-lg font-medium ${highlighted ? 'text-orange-700 font-bold' : 'text-slate-800'}`}>
+        {text}
+      </span>
+      {chinese && (
+        <span className={`text-xs ${highlighted ? 'text-orange-600 font-bold' : 'text-slate-500'}`}>
+          {chinese}
+        </span>
+      )}
+    </div>
   );
 };
 
-const SentenceSpeaker = ({ text, speed, minimal = false }: { text: string; speed: number; minimal?: boolean }) => {
+interface SentenceSpeakerProps {
+  text: string;
+  speed: number;
+  minimal?: boolean;
+  translation?: string;
+  alignment?: { dutch: string, chinese: string }[];
+}
+
+const SentenceSpeaker: React.FC<SentenceSpeakerProps> = ({ 
+  text, 
+  speed, 
+  minimal = false, 
+  translation,
+  alignment 
+}) => {
+  const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
+
   const speak = () => {
     speakDutch(text, speed);
   };
@@ -71,21 +104,42 @@ const SentenceSpeaker = ({ text, speed, minimal = false }: { text: string; speed
   const words = text.split(' ');
 
   return (
-    <div className={`flex flex-col gap-2 group ${minimal ? '' : 'w-full'}`}>
-      <div className={`flex flex-wrap gap-x-1 gap-y-1 text-lg leading-relaxed text-slate-800 font-medium ${minimal ? '' : 'p-3 bg-white rounded-lg border border-slate-200 shadow-sm group-hover:border-orange-300 transition-colors'}`}>
-        {words.map((word, i) => (
-          <React.Fragment key={i}>
-            <WordSpeaker text={word} speed={speed} />
-            {i < words.length - 1 && ' '}
-          </React.Fragment>
-        ))}
+    <div className={`flex flex-col gap-3 group ${minimal ? '' : 'w-full'}`}>
+      <div className={`flex flex-wrap gap-x-2 gap-y-3 leading-relaxed ${minimal ? '' : 'p-4 bg-white rounded-xl border border-slate-200 shadow-sm group-hover:border-orange-300 transition-colors'}`}>
+        
+        {/* Render Words: Either simple split OR Aligned Gloss */}
+        {alignment ? (
+           alignment.map((item, i) => (
+             <WordSpeaker 
+               key={i} 
+               text={item.dutch} 
+               speed={speed} 
+               chinese={item.chinese} 
+               highlighted={activeWordIndex === i}
+             />
+           ))
+        ) : (
+          words.map((word, i) => (
+            <WordSpeaker key={i} text={word} speed={speed} />
+          ))
+        )}
       </div>
+
+      {/* Full Sentence Translation */}
+      {translation && (
+        <div className={`text-sm text-slate-500 italic px-1 ${minimal ? '' : 'ml-1'}`}>
+           <span className="font-bold text-slate-400 text-xs uppercase mr-2">意思:</span>
+           {translation}
+        </div>
+      )}
+
+      {/* Action Button */}
       {!minimal && (
         <button 
           onClick={speak}
           className="self-start flex items-center gap-2 text-sm text-blue-600 font-semibold hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full"
         >
-          <Volume2 size={14} /> 听发音
+          <Volume2 size={14} /> 听整句
         </button>
       )}
       {minimal && (
@@ -608,7 +662,13 @@ const App: React.FC = () => {
                       <div key={sample.id} className="relative">
                         <div className="absolute -left-3 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-300 to-orange-100 rounded-full"></div>
                         <div className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">选项 {idx + 1}</div>
-                        <SentenceSpeaker text={sample.text} speed={playbackSpeed} />
+                        <SentenceSpeaker 
+                          text={sample.text} 
+                          speed={playbackSpeed} 
+                          translation={sample.translation}
+                          // Only provide alignment for the first sample IF analysis is present
+                          alignment={idx === 0 && analysis?.wordAlignment ? analysis.wordAlignment : undefined}
+                        />
                       </div>
                     ))}
                  </div>
