@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy } from 'lucide-react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
@@ -46,10 +46,10 @@ const Spinner = () => (
   </svg>
 );
 
-const WordSpeaker = ({ text }: { text: string }) => {
+const WordSpeaker = ({ text, speed }: { text: string; speed: number }) => {
   const speak = (e: React.MouseEvent) => {
     e.stopPropagation();
-    speakDutch(text, 0.8);
+    speakDutch(text, speed);
   };
 
   return (
@@ -63,9 +63,9 @@ const WordSpeaker = ({ text }: { text: string }) => {
   );
 };
 
-const SentenceSpeaker = ({ text }: { text: string }) => {
+const SentenceSpeaker = ({ text, speed }: { text: string; speed: number }) => {
   const speak = () => {
-    speakDutch(text, 0.9);
+    speakDutch(text, speed);
   };
 
   const words = text.split(' ');
@@ -75,7 +75,7 @@ const SentenceSpeaker = ({ text }: { text: string }) => {
       <div className="flex flex-wrap gap-x-1 gap-y-1 text-lg leading-relaxed text-slate-800 font-medium p-3 bg-white rounded-lg border border-slate-200 shadow-sm group-hover:border-orange-300 transition-colors">
         {words.map((word, i) => (
           <React.Fragment key={i}>
-            <WordSpeaker text={word} />
+            <WordSpeaker text={word} speed={speed} />
             {i < words.length - 1 && ' '}
           </React.Fragment>
         ))}
@@ -154,6 +154,7 @@ const App: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGrading, setIsGrading] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [grade, setGrade] = useState<AIGrade | null>(null);
@@ -253,7 +254,7 @@ const App: React.FC = () => {
 
   const playQuestionAudio = () => {
     if (!currentQuestion) return;
-    speakDutch(currentQuestion.questionDutch, 0.9);
+    speakDutch(currentQuestion.questionDutch, playbackSpeed);
   };
 
   const handleAnalyze = async () => {
@@ -388,6 +389,29 @@ const App: React.FC = () => {
           ))}
         </div>
 
+        {/* Speed Control */}
+        <div className="flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow-sm border border-slate-200">
+          <div className="flex items-center gap-2 text-slate-600 text-sm font-bold">
+            <Gauge size={18} className="text-indigo-500" />
+            <span>语音语速</span>
+          </div>
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+            {[0.5, 0.75, 1.0, 1.25].map((speed) => (
+              <button
+                key={speed}
+                onClick={() => setPlaybackSpeed(speed)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-md transition-all ${
+                  playbackSpeed === speed
+                    ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-500 hover:bg-slate-200 hover:text-slate-700'
+                }`}
+              >
+                {speed}x
+              </button>
+            ))}
+          </div>
+        </div>
+
         {questions.length === 0 ? (
            <div className="text-center py-20 text-slate-500">该部分暂无题目。</div>
         ) : (
@@ -478,7 +502,7 @@ const App: React.FC = () => {
                       <div key={sample.id} className="relative">
                         <div className="absolute -left-3 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-300 to-orange-100 rounded-full"></div>
                         <div className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">选项 {idx + 1}</div>
-                        <SentenceSpeaker text={sample.text} />
+                        <SentenceSpeaker text={sample.text} speed={playbackSpeed} />
                       </div>
                     ))}
                  </div>
