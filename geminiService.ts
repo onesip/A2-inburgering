@@ -111,8 +111,8 @@ export const gradeUserAudio = async (question: string, audioBase64: string, keyW
     - score: number (1-10) based on A2 level expectations (understandability is key).
     - transcription: what you heard (Dutch).
     - pronunciation: specific feedback on pronunciation errors (Explain in CHINESE).
-    - grammarCorrection: correct the sentence if grammar/word order is wrong (Explain in CHINESE).
-    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). If this is a drill, confirm if they used the required words and correct word order.
+    - grammarCorrection: The FULL CORRECTED DUTCH SENTENCE ONLY. Do not include Chinese explanation here. Just the correct Dutch text.
+    - feedback: general constructive feedback in SIMPLIFIED CHINESE (中文). Include explanation of grammar mistakes here.
   `;
 
   const response = await ai.models.generateContent({

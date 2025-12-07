@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus } from 'lucide-react';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear } from 'lucide-react';
 import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
 import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
 import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
@@ -63,7 +63,7 @@ const WordSpeaker = ({ text, speed }: { text: string; speed: number }) => {
   );
 };
 
-const SentenceSpeaker = ({ text, speed }: { text: string; speed: number }) => {
+const SentenceSpeaker = ({ text, speed, minimal = false }: { text: string; speed: number; minimal?: boolean }) => {
   const speak = () => {
     speakDutch(text, speed);
   };
@@ -71,8 +71,8 @@ const SentenceSpeaker = ({ text, speed }: { text: string; speed: number }) => {
   const words = text.split(' ');
 
   return (
-    <div className="flex flex-col gap-2 group">
-      <div className="flex flex-wrap gap-x-1 gap-y-1 text-lg leading-relaxed text-slate-800 font-medium p-3 bg-white rounded-lg border border-slate-200 shadow-sm group-hover:border-orange-300 transition-colors">
+    <div className={`flex flex-col gap-2 group ${minimal ? '' : 'w-full'}`}>
+      <div className={`flex flex-wrap gap-x-1 gap-y-1 text-lg leading-relaxed text-slate-800 font-medium ${minimal ? '' : 'p-3 bg-white rounded-lg border border-slate-200 shadow-sm group-hover:border-orange-300 transition-colors'}`}>
         {words.map((word, i) => (
           <React.Fragment key={i}>
             <WordSpeaker text={word} speed={speed} />
@@ -80,12 +80,22 @@ const SentenceSpeaker = ({ text, speed }: { text: string; speed: number }) => {
           </React.Fragment>
         ))}
       </div>
-      <button 
-        onClick={speak}
-        className="self-start flex items-center gap-2 text-sm text-blue-600 font-semibold hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full"
-      >
-        <Volume2 size={14} /> 听发音
-      </button>
+      {!minimal && (
+        <button 
+          onClick={speak}
+          className="self-start flex items-center gap-2 text-sm text-blue-600 font-semibold hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full"
+        >
+          <Volume2 size={14} /> 听发音
+        </button>
+      )}
+      {minimal && (
+         <button 
+          onClick={speak}
+          className="self-start flex items-center gap-1.5 text-xs text-green-700 font-bold hover:text-green-800 bg-green-200/50 px-2 py-1 rounded shadow-sm mt-1"
+        >
+          <Volume2 size={12} /> 听标准示范 (整句)
+        </button>
+      )}
     </div>
   );
 };
@@ -685,13 +695,16 @@ const App: React.FC = () => {
                     <div className="grid gap-4 sm:grid-cols-2">
                        <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                           <span className="flex items-center gap-1.5 text-xs font-bold text-green-700 uppercase tracking-wide mb-2">
-                            <CheckCircle2 size={14} /> 语法修正
+                            <CheckCircle2 size={14} /> 语法修正 / 正确发音 (点击单词跟读)
                           </span>
-                          <p className="text-green-900 text-sm font-medium">{grade.grammarCorrection}</p>
+                          {/* UPDATED: Use SentenceSpeaker here so users can listen to correct pronunciation */}
+                          <div className="mt-1">
+                             <SentenceSpeaker text={grade.grammarCorrection} speed={playbackSpeed} minimal={true} />
+                          </div>
                        </div>
                        <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
                           <span className="flex items-center gap-1.5 text-xs font-bold text-orange-700 uppercase tracking-wide mb-2">
-                            <Volume2 size={14} /> 发音指导
+                            <Ear size={14} /> 发音诊断
                           </span>
                           <p className="text-orange-900 text-sm">{grade.pronunciation}</p>
                        </div>
