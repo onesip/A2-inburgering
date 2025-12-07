@@ -3,9 +3,9 @@ import { AIAnalysis, AIGrade } from "./types";
 
 // Helper to get client
 const getAiClient = () => {
-  // CRITICAL FIX: Use import.meta.env.VITE_API_KEY for Vercel/Vite deployments.
-  // 'process.env' does not exist in the browser and causes a white screen crash.
-  const apiKey = (import.meta as any).env.VITE_API_KEY;
+  // Safe access to environment variable for Vercel/Vite
+  // Uses optional chaining to prevent crashes if env is undefined
+  const apiKey = (import.meta as any).env?.VITE_API_KEY;
   
   if (!apiKey) {
     console.error("API Key is missing. Please check your Vercel Environment Variables.");
