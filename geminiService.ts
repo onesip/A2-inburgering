@@ -2,10 +2,10 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AIAnalysis, AIGrade, ExamPart, DrillType, DrillResult } from "./types";
 
 // Define Models
-// Primary: The "Test Mode" or Advanced model (Gemini 3 Pro Preview)
-// Fallback: The "Normal" model (Gemini 2.5 Flash)
-const MODEL_PRIMARY = 'gemini-3-pro-preview';
-const MODEL_FALLBACK = 'gemini-2.5-flash';
+// Primary: "gemini-2.5-flash" (Fast, standard, very capable for A2)
+// Fallback: "gemini-flash-lite-latest" (Extremely fast, lower latency, good for backup)
+const MODEL_PRIMARY = 'gemini-2.5-flash';
+const MODEL_FALLBACK = 'gemini-flash-lite-latest';
 
 // Helper to get client
 const getAiClient = () => {
@@ -32,7 +32,12 @@ async function withModelFallback<T>(
     return await operation(MODEL_PRIMARY);
   } catch (error) {
     console.warn(`Primary model ${MODEL_PRIMARY} failed. Falling back to ${MODEL_FALLBACK}.`, error);
-    return await operation(MODEL_FALLBACK);
+    try {
+      return await operation(MODEL_FALLBACK);
+    } catch (fallbackError) {
+      console.error("Both models failed.", fallbackError);
+      throw fallbackError;
+    }
   }
 }
 
