@@ -6,6 +6,12 @@ export enum ExamPart {
   Part4 = 'Part 4: Story',
 }
 
+export enum DrillType {
+  Completion = 'completion', // Finish the sentence (want/omdat)
+  Expansion = 'expansion',   // Add Time/Place
+  Sequence = 'sequence'      // Eerst/Daarna
+}
+
 export interface IdealSample {
   id: number;
   text: string;
@@ -46,6 +52,13 @@ export interface AIGrade {
   pronunciation: string;
   grammarCorrection: string;
   feedback: string;
+}
+
+export interface DrillResult {
+  isCorrect: boolean;
+  transcription: string;
+  feedback: string; // Chinese explanation of the structure
+  betterVersion?: string;
 }
 
 export interface StudyPlanDay {

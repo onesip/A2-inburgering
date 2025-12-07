@@ -1,4 +1,26 @@
-import { ExamPart, QuestionItem, StudyPlanDay } from './types';
+import { ExamPart, QuestionItem, StudyPlanDay, DrillType } from './types';
+
+export const DRILL_SCENARIOS = {
+  [DrillType.Completion]: [
+    { prompt: "Ik ga niet naar buiten, want ...", hint: "我不出去，因为... (注意语序：want + 正语序)" },
+    { prompt: "Ik ga niet naar buiten, omdat ...", hint: "我不出去，因为... (注意语序：omdat + 动词后置)" },
+    { prompt: "Ik leer Nederlands, want ...", hint: "我学荷兰语，因为..." },
+    { prompt: "Ik ben blij, omdat ...", hint: "我很开心，因为..." },
+    { prompt: "Ik eet geen vlees, maar ...", hint: "我不吃肉，但是..." },
+    { prompt: "Ik wil graag werken, dus ...", hint: "我想工作，所以..." },
+  ],
+  [DrillType.Expansion]: [
+    { prompt: "Ik werk. (请加入：elke dag / op kantoor)", hint: "基础：我工作。目标：我每天在办公室工作。" },
+    { prompt: "Ik kook. (请加入：vaak / thuis)", hint: "基础：我做饭。目标：我经常在家做饭。" },
+    { prompt: "Wij gaan. (请加入：morgen / naar Amsterdam)", hint: "基础：我们去。目标：我们明天去阿姆斯特丹。" },
+    { prompt: "Zij fietst. (请加入：in het weekend / in het park)", hint: "基础：她骑车。目标：她周末在公园骑车。" },
+  ],
+  [DrillType.Sequence]: [
+    { prompt: "Koffie zetten (泡咖啡)", hint: "请用 Eerst..., Daarna... 描述泡咖啡的两个步骤。" },
+    { prompt: "Naar bed gaan (去睡觉)", hint: "请用 Eerst..., Daarna... 描述睡觉前的两个步骤（如刷牙、穿睡衣）。" },
+    { prompt: "Boodschappen doen (买菜)", hint: "请用 Eerst..., Daarna... 描述买菜的过程。" },
+  ]
+};
 
 export const STUDY_PLAN: StudyPlanDay[] = [
   // --- PHASE 1: FOUNDATION (PART 1) ---

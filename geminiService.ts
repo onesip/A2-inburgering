@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { AIAnalysis, AIGrade, ExamPart } from "./types";
+import { AIAnalysis, AIGrade, ExamPart, DrillType, DrillResult } from "./types";
 
 // Helper to get client
 const getAiClient = () => {
@@ -206,6 +206,68 @@ export const gradeUserAudio = async (
 
   if (response.text) {
     return JSON.parse(response.text) as AIGrade;
+  }
+  throw new Error("No response from AI");
+};
+
+// 3. SENTENCE GYM: Grade sentence drills
+export const gradeDrillAudio = async (
+  drillType: DrillType, 
+  promptText: string,
+  audioBase64: string
+): Promise<DrillResult> => {
+  const ai = getAiClient();
+
+  const rubric = {
+    [DrillType.Completion]: "Did the student complete the sentence logically AND use correct word order for the conjunction (want vs omdat)?",
+    [DrillType.Expansion]: "Did the student include the requested elements (Time/Place) in the correct position (S-V-Time-Place or Time-V-S-Place)?",
+    [DrillType.Sequence]: "Did the student use 'Eerst', 'Daarna' (or similar connectors) to describe a sequence?"
+  }[drillType];
+
+  const prompt = `
+    You are a strict Dutch grammar drill sergeant.
+    Drill Type: ${drillType}
+    Prompt/Task: "${promptText}"
+    
+    Evaluate the student's audio.
+    CRITERIA: ${rubric}
+    
+    Return JSON:
+    - isCorrect: boolean (strict check on word order and completion).
+    - transcription: what was said.
+    - feedback: Explanation in SIMPLIFIED CHINESE. Explain WHY the word order is right or wrong.
+    - betterVersion: The perfect version of the sentence.
+  `;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: {
+      parts: [
+        {
+          inlineData: {
+            mimeType: 'audio/webm',
+            data: audioBase64
+          }
+        },
+        { text: prompt }
+      ]
+    },
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          isCorrect: { type: Type.BOOLEAN },
+          transcription: { type: Type.STRING },
+          feedback: { type: Type.STRING },
+          betterVersion: { type: Type.STRING }
+        }
+      }
+    }
+  });
+
+  if (response.text) {
+    return JSON.parse(response.text) as DrillResult;
   }
   throw new Error("No response from AI");
 };

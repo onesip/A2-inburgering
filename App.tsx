@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles } from 'lucide-react';
-import { QUESTION_DATABASE, STUDY_PLAN } from './constants';
-import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay } from './types';
-import { analyzeIdealAnswer, gradeUserAudio } from './geminiService';
+import { Mic, Square, Volume2, BookOpen, GraduationCap, ChevronRight, ChevronLeft, RefreshCw, CheckCircle2, AlertCircle, Lightbulb, MapPin, List, Shuffle, Calendar, Target, Clock, Trophy, Gauge, Hammer, Plus, Ear, CheckSquare, PartyPopper, Sparkles, Dumbbell } from 'lucide-react';
+import { QUESTION_DATABASE, STUDY_PLAN, DRILL_SCENARIOS } from './constants';
+import { ExamPart, QuestionItem, AIAnalysis, AIGrade, StudyPlanDay, DrillType, DrillResult } from './types';
+import { analyzeIdealAnswer, gradeUserAudio, gradeDrillAudio } from './geminiService';
 
 // --- UTILS ---
 
@@ -219,6 +219,193 @@ const StrategyCard = ({ part }: { part: ExamPart }) => {
     </div>
   );
 };
+
+const SentenceGym = () => {
+  const [activeDrill, setActiveDrill] = useState<DrillType>(DrillType.Completion);
+  const [prompt, setPrompt] = useState(DRILL_SCENARIOS[DrillType.Completion][0]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [result, setResult] = useState<DrillResult | null>(null);
+  const [isGrading, setIsGrading] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const generatePrompt = (type: DrillType) => {
+    const list = DRILL_SCENARIOS[type];
+    const random = list[Math.floor(Math.random() * list.length)];
+    setPrompt(random);
+    setResult(null);
+  };
+
+  const handleTabChange = (type: DrillType) => {
+    setActiveDrill(type);
+    generatePrompt(type);
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setResult(null);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("无法访问麦克风。");
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!mediaRecorderRef.current) return;
+    
+    mediaRecorderRef.current.stop();
+    setIsRecording(false);
+
+    mediaRecorderRef.current.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        const base64Audio = (reader.result as string).split(',')[1];
+        await handleGrade(base64Audio);
+      };
+    };
+  };
+
+  const handleGrade = async (audioBase64: string) => {
+    setIsGrading(true);
+    try {
+      const res = await gradeDrillAudio(activeDrill, prompt.prompt, audioBase64);
+      setResult(res);
+    } catch (error) {
+      console.error(error);
+      alert("AI 老师休息中，请稍后再试。");
+    } finally {
+      setIsGrading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 p-6 shadow-sm mt-6 relative overflow-hidden">
+       {/* Background Decoration */}
+       <div className="absolute -right-10 -top-10 opacity-5 pointer-events-none">
+          <Dumbbell size={150} />
+       </div>
+
+       <div className="flex items-center gap-2 mb-6 relative z-10">
+         <div className="bg-emerald-500 text-white p-2 rounded-lg shadow">
+           <Dumbbell size={24} />
+         </div>
+         <div>
+            <h3 className="font-bold text-emerald-900 text-lg">句型健身房 (Sentence Gym)</h3>
+            <p className="text-xs text-emerald-600">不练整段，只练肌肉记忆！(yiban / yikun)</p>
+         </div>
+       </div>
+
+       {/* Tabs */}
+       <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide relative z-10">
+         {[
+           { id: DrillType.Completion, label: '半句接龙 (Completion)' },
+           { id: DrillType.Expansion, label: '扩句挑战 (Expansion)' },
+           { id: DrillType.Sequence, label: '逻辑链 (Sequence)' }
+         ].map(tab => (
+           <button
+             key={tab.id}
+             onClick={() => handleTabChange(tab.id)}
+             className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+               activeDrill === tab.id 
+                 ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-200' 
+                 : 'bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+             }`}
+           >
+             {tab.label}
+           </button>
+         ))}
+       </div>
+
+       {/* Challenge Card */}
+       <div className="bg-white rounded-xl shadow border border-emerald-100 p-6 flex flex-col items-center text-center relative z-10">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">你的挑战任务</span>
+          <h4 className="text-xl md:text-2xl font-bold text-slate-800 mb-2 leading-relaxed">
+            {prompt.prompt}
+          </h4>
+          <p className="text-sm text-slate-500 mb-6 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+             💡 {prompt.hint}
+          </p>
+
+          <div className="flex items-center gap-4">
+             <button
+               onClick={() => generatePrompt(activeDrill)}
+               className="p-3 text-slate-400 hover:text-emerald-600 transition-colors"
+               title="换一题"
+             >
+               <RefreshCw size={20} />
+             </button>
+
+             <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`
+                  w-16 h-16 rounded-full flex items-center justify-center transition-all shadow-lg
+                  ${isRecording 
+                    ? 'bg-red-500 text-white scale-110 ring-4 ring-red-200 animate-pulse' 
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600 hover:scale-105'
+                  }
+                `}
+             >
+                {isRecording ? <Square size={24} fill="currentColor" /> : <Mic size={24} />}
+             </button>
+          </div>
+          
+          <p className="text-xs text-slate-400 mt-4 h-4">
+            {isRecording ? "正在录音... 请补全句子" : "点击麦克风开始挑战"}
+          </p>
+       </div>
+
+       {/* Feedback Area */}
+       {isGrading && (
+         <div className="mt-4 text-center text-emerald-600 text-sm animate-pulse font-medium">
+           AI 教练正在检查你的语序...
+         </div>
+       )}
+
+       {result && !isGrading && (
+         <div className={`mt-4 rounded-xl p-4 border animate-in slide-in-from-top-2 relative z-10 ${result.isCorrect ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+            <div className="flex items-start gap-3">
+               <div className={`mt-1 p-1 rounded-full text-white ${result.isCorrect ? 'bg-green-500' : 'bg-orange-500'}`}>
+                 {result.isCorrect ? <CheckSquare size={16} /> : <AlertCircle size={16} />}
+               </div>
+               <div className="text-left">
+                  <h5 className={`font-bold text-sm mb-1 ${result.isCorrect ? 'text-green-800' : 'text-orange-800'}`}>
+                    {result.isCorrect ? "挑战成功！" : "还需要调整"}
+                  </h5>
+                  <p className="text-slate-700 text-sm mb-2">"{result.transcription}"</p>
+                  <p className="text-xs text-slate-500 mb-3">{result.feedback}</p>
+                  
+                  {result.betterVersion && (
+                    <div className="bg-white/50 p-2 rounded border border-black/5">
+                      <span className="text-xs font-bold text-slate-400 uppercase mr-2">标准示范:</span>
+                      <span className="text-sm font-medium text-slate-700">{result.betterVersion}</span>
+                      <button 
+                        onClick={() => speakDutch(result.betterVersion!, 0.85)}
+                        className="ml-2 inline-block align-middle text-blue-500 hover:text-blue-700"
+                      >
+                         <Volume2 size={14} />
+                      </button>
+                    </div>
+                  )}
+               </div>
+            </div>
+         </div>
+       )}
+    </div>
+  );
+}
 
 const StudyPlanCard = ({ 
   currentDay, 
@@ -645,6 +832,9 @@ const App: React.FC = () => {
           <>
             {/* Strategy Card - NEW: Shows tips from PDF based on active part */}
             <StrategyCard part={activePart} />
+
+            {/* SENTENCE GYM - NEW: Drills for sentence structure */}
+            <SentenceGym />
 
             {/* Navigation & Tools */}
             <div className="flex flex-col gap-3">
